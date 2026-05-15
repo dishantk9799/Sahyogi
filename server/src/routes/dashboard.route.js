@@ -1,0 +1,9 @@
+import express from "express";
+import { dashboard } from "../controllers/dashboard.controller.js";
+import { verifyJWT } from "../middleware/auth.middleware.js";
+
+const router = express.Router();
+
+router.get("/", verifyJWT, dashboard);
+
+export default router;
