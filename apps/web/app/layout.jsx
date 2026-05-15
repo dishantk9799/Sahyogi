@@ -8,6 +8,9 @@ export const metadata = {
   },
   description:
     "A premium publishing platform for writers, publications, subscriptions, and durable reader relationships.",
+  icons: {
+    icon: "/favicon.svg",
+  },
   openGraph: {
     title: "Sahyogi",
     description: "A refined publishing platform for independent writers and publications.",
