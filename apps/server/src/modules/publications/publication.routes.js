@@ -10,6 +10,7 @@ import {
   updatePublicationSchema,
 } from "./publication.validation.js";
 export const publicationRoutes = Router();
+publicationRoutes.get("/", publicationsController.listPublic);
 publicationRoutes.get("/mine", requireAuth, publicationsController.listMine);
 publicationRoutes.post(
   "/",

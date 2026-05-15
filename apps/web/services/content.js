@@ -37,7 +37,12 @@ export async function getPost(slug) {
   return post ?? (!apiRootUrl ? seedPosts.find((item) => item.slug === slug) : null) ?? null;
 }
 export async function getPublications() {
-  return seedPublications;
+  const publications = await apiFetch("/api/publications");
+  if (publications?.length) {
+    return publications;
+  }
+
+  return apiRootUrl ? [] : seedPublications;
 }
 export async function getPublication(slug) {
   const publication = await apiFetch(`/api/publications/${slug}`);
@@ -46,4 +51,12 @@ export async function getPublication(slug) {
     (!apiRootUrl ? seedPublications.find((item) => item.slug === slug) : null) ??
     null
   );
+}
+export async function getPublicationPosts(slug) {
+  const posts = await apiFetch(`/api/posts?publicationSlug=${encodeURIComponent(slug)}`);
+  if (posts?.length) {
+    return posts;
+  }
+
+  return apiRootUrl ? [] : seedPosts.filter((post) => post.publication.slug === slug);
 }

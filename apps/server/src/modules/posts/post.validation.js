@@ -61,6 +61,7 @@ export const postSlugParamsSchema = z.object({
 export const listPostsQuerySchema = z.object({
   search: z.string().trim().max(80).optional(),
   tag: z.string().trim().max(32).optional(),
+  publicationSlug: z.string().trim().min(3).max(80).optional(),
   cursor: z.string().datetime().optional(),
   limit: z.coerce.number().int().min(1).max(50).optional().default(12),
 });

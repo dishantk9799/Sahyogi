@@ -27,6 +27,10 @@ export const publicationsService = {
     }
     return toPublicationDTO(publication);
   },
+  async listPublic() {
+    const publications = await publicationsRepository.findPublic();
+    return publications.map(toPublicationDTO);
+  },
   async listMine(user) {
     const publications = await publicationsRepository.findByOwner(user.id);
     return publications.map(toPublicationDTO);

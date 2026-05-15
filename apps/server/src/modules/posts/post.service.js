@@ -28,10 +28,20 @@ async function assertPublicationOwner(publicationId, user) {
 }
 export const postsService = {
   async listPublished(query) {
+    let publicationId;
+    if (query.publicationSlug) {
+      const publication = await publicationsRepository.findBySlug(query.publicationSlug);
+      if (!publication) {
+        throw new ApiError(HttpStatus.NOT_FOUND, "Publication not found");
+      }
+      publicationId = publication._id.toString();
+    }
+
     const posts = await postsRepository.findPublished({
       limit: query.limit,
       ...(query.search ? { search: query.search } : {}),
       ...(query.tag ? { tag: query.tag } : {}),
+      ...(publicationId ? { publicationId } : {}),
       ...(query.cursor ? { cursor: query.cursor } : {}),
     });
     return {

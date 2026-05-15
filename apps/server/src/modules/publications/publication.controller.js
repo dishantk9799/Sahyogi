@@ -13,6 +13,10 @@ export const publicationsController = {
     const publication = await publicationsService.getBySlug(req.params.slug);
     res.status(HttpStatus.OK).json(new ApiResponse(HttpStatus.OK, publication, "Publication"));
   }),
+  listPublic: asyncHandler(async (_req, res) => {
+    const publications = await publicationsService.listPublic();
+    res.status(HttpStatus.OK).json(new ApiResponse(HttpStatus.OK, publications, "Publications"));
+  }),
   listMine: asyncHandler(async (req, res) => {
     const publications = await publicationsService.listMine(req.user);
     res

@@ -33,6 +33,9 @@ export const postsRepository = {
     if (params.tag) {
       query.tags = params.tag;
     }
+    if (params.publicationId) {
+      query.publicationId = new mongoose.Types.ObjectId(params.publicationId);
+    }
     if (params.cursor) {
       query.publishedAt = { $lt: new Date(params.cursor) };
     }

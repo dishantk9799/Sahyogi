@@ -348,4 +348,60 @@ describe("auth", () => {
     expect(response.status).toBe(422);
     expect(response.body.details.formErrors[0]).toBe("At least one field is required");
   });
+
+  it("lists public publications and filters posts by publication slug", async () => {
+    const cookies = await createSessionCookies();
+    const firstPublication = await request(app)
+      .post("/api/publications")
+      .set("Cookie", cookies)
+      .send({
+        name: "Filtered Desk One",
+        slug: "filtered-desk-one",
+      });
+    const secondPublication = await request(app)
+      .post("/api/publications")
+      .set("Cookie", cookies)
+      .send({
+        name: "Filtered Desk Two",
+        slug: "filtered-desk-two",
+      });
+
+    const firstPost = await request(app)
+      .post("/api/posts")
+      .set("Cookie", cookies)
+      .send({
+        publicationId: firstPublication.body.data.id,
+        title: "Filtered First Post",
+      });
+    const secondPost = await request(app)
+      .post("/api/posts")
+      .set("Cookie", cookies)
+      .send({
+        publicationId: secondPublication.body.data.id,
+        title: "Filtered Second Post",
+      });
+
+    await request(app).post(`/api/posts/${firstPost.body.data.id}/publish`).set("Cookie", cookies);
+    await request(app).post(`/api/posts/${secondPost.body.data.id}/publish`).set("Cookie", cookies);
+
+    const publicationsResponse = await request(app).get("/api/publications");
+    const firstPostsResponse = await request(app).get(
+      "/api/posts?publicationSlug=filtered-desk-one",
+    );
+
+    expect(publicationsResponse.status).toBe(200);
+    expect(publicationsResponse.body.data.map((publication) => publication.slug)).toEqual(
+      expect.arrayContaining(["filtered-desk-one", "filtered-desk-two"]),
+    );
+    expect(firstPostsResponse.status).toBe(200);
+    expect(firstPostsResponse.body.data).toHaveLength(1);
+    expect(firstPostsResponse.body.data[0].publication.slug).toBe("filtered-desk-one");
+  });
+
+  it("returns not found when filtering posts by an unknown publication", async () => {
+    const response = await request(app).get("/api/posts?publicationSlug=missing-publication");
+
+    expect(response.status).toBe(404);
+    expect(response.body.message).toBe("Publication not found");
+  });
 });

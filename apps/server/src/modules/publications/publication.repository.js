@@ -6,6 +6,9 @@ export const publicationsRepository = {
   findBySlug(slug) {
     return Publication.findOne({ slug: slug.toLowerCase() });
   },
+  findPublic() {
+    return Publication.find({ status: "active" }).sort({ subscriberCount: -1, createdAt: -1 });
+  },
   findById(id) {
     return Publication.findById(id);
   },

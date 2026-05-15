@@ -2,7 +2,7 @@ import { notFound } from "next/navigation";
 import { SiteHeader } from "@/components/site/site-header";
 import { SubscribeForm } from "@/components/content/subscribe-form";
 import { PostCard } from "@/components/content/post-card";
-import { getFeaturedPosts, getPublication } from "@/services/content";
+import { getPublication, getPublicationPosts } from "@/services/content";
 export async function generateMetadata({ params }) {
   const { slug } = await params;
   const publication = await getPublication(slug);
@@ -19,7 +19,7 @@ export async function generateMetadata({ params }) {
 }
 export default async function PublicationPage({ params }) {
   const { slug } = await params;
-  const [publication, posts] = await Promise.all([getPublication(slug), getFeaturedPosts()]);
+  const [publication, posts] = await Promise.all([getPublication(slug), getPublicationPosts(slug)]);
   if (!publication) {
     notFound();
   }
@@ -48,9 +48,15 @@ export default async function PublicationPage({ params }) {
           </div>
         </section>
         <section className="mx-auto grid max-w-6xl gap-8 px-4 py-12 sm:px-6 md:grid-cols-2 lg:px-8">
-          {posts.map((post) => (
-            <PostCard key={post.id} post={post} />
-          ))}
+          {posts.length ? (
+            posts.map((post) => <PostCard key={post.id} post={post} />)
+          ) : (
+            <div className="md:col-span-2">
+              <p className="text-sm text-muted-foreground">
+                No published posts are available for this publication yet.
+              </p>
+            </div>
+          )}
         </section>
       </main>
     </>
