@@ -83,6 +83,34 @@ describe("auth", () => {
     expect(response.body.message).toBe("Invalid or expired session");
   });
 
+  it("logs in, refreshes, and logs out a session", async () => {
+    await request(app).post("/api/auth/signup").send({
+      fullName: "Session Writer",
+      username: "sessionwriter",
+      email: "session@example.com",
+      password: "password123",
+    });
+
+    const loginResponse = await request(app).post("/api/auth/login").send({
+      email: "session@example.com",
+      password: "password123",
+    });
+    const refreshResponse = await request(app)
+      .post("/api/auth/refresh")
+      .set("Cookie", loginResponse.headers["set-cookie"]);
+    const logoutResponse = await request(app)
+      .post("/api/auth/logout")
+      .set("Cookie", refreshResponse.headers["set-cookie"]);
+
+    expect(loginResponse.status).toBe(200);
+    expect(loginResponse.body.data.email).toBe("session@example.com");
+    expect(loginResponse.headers["set-cookie"]).toBeDefined();
+    expect(refreshResponse.status).toBe(200);
+    expect(refreshResponse.headers["set-cookie"]).toBeDefined();
+    expect(logoutResponse.status).toBe(200);
+    expect(logoutResponse.body.message).toBe("Logged out");
+  });
+
   it("does not expose private email on public profiles", async () => {
     await request(app).post("/api/auth/signup").send({
       fullName: "Public Writer",

@@ -1,6 +1,8 @@
 import {
   ACCESS_TOKEN_COOKIE,
   accessCookieOptions,
+  clearAccessCookieOptions,
+  clearRefreshCookieOptions,
   REFRESH_TOKEN_COOKIE,
   refreshCookieOptions,
 } from "../../constants/cookies.js";
@@ -19,8 +21,8 @@ function setAuthCookies(res, tokens) {
   res.cookie(REFRESH_TOKEN_COOKIE, tokens.refreshToken, refreshCookieOptions);
 }
 function clearAuthCookies(res) {
-  res.clearCookie(ACCESS_TOKEN_COOKIE, accessCookieOptions);
-  res.clearCookie(REFRESH_TOKEN_COOKIE, refreshCookieOptions);
+  res.clearCookie(ACCESS_TOKEN_COOKIE, clearAccessCookieOptions);
+  res.clearCookie(REFRESH_TOKEN_COOKIE, clearRefreshCookieOptions);
 }
 export const authController = {
   signup: asyncHandler(async (req, res) => {

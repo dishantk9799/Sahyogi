@@ -2,11 +2,14 @@
 
 import Link from "next/link";
 import { useEffect, useState } from "react";
-import { BarChart3, FileText, Settings, Users } from "lucide-react";
+import { BarChart3, FileText, LogOut, Settings, Users } from "lucide-react";
 import { useRouter } from "next/navigation";
+import { toast } from "sonner";
 import { SiteHeader } from "@/components/site/site-header";
 import { Button } from "@/components/ui/button";
-import { api } from "@/services/api";
+import { getApiErrorMessage } from "@/services/api";
+import { logout } from "@/services/auth";
+import { getCurrentUser } from "@/services/users";
 const dashboardNav = [
   { href: "/dashboard", label: "Overview", icon: BarChart3 },
   { href: "/dashboard/posts", label: "Posts", icon: FileText },
@@ -16,13 +19,14 @@ const dashboardNav = [
 export function DashboardShell({ children }) {
   const router = useRouter();
   const [checkingSession, setCheckingSession] = useState(true);
+  const [loggingOut, setLoggingOut] = useState(false);
 
   useEffect(() => {
     let mounted = true;
 
     async function verifySession() {
       try {
-        await api.get("/api/auth/me");
+        await getCurrentUser();
         if (mounted) {
           setCheckingSession(false);
         }
@@ -38,6 +42,21 @@ export function DashboardShell({ children }) {
     };
   }, [router]);
 
+  async function handleLogout() {
+    setLoggingOut(true);
+
+    try {
+      await logout();
+      toast.success("Logged out");
+      router.replace("/login");
+      router.refresh();
+    } catch (error) {
+      toast.error(getApiErrorMessage(error, "Logout failed"));
+    } finally {
+      setLoggingOut(false);
+    }
+  }
+
   return (
     <>
       <SiteHeader />
@@ -52,6 +71,16 @@ export function DashboardShell({ children }) {
                 </Link>
               </Button>
             ))}
+            <Button
+              type="button"
+              variant="ghost"
+              className="mt-3 justify-start text-muted-foreground"
+              disabled={loggingOut}
+              onClick={handleLogout}
+            >
+              <LogOut className="h-4 w-4" />
+              {loggingOut ? "Logging out..." : "Logout"}
+            </Button>
           </nav>
         </aside>
         <section>
