@@ -80,6 +80,21 @@ describe("auth", () => {
     expect(response.body.message).toBe("Invalid or expired session");
   });
 
+  it("does not expose private email on public profiles", async () => {
+    await request(app).post("/api/auth/signup").send({
+      fullName: "Public Writer",
+      username: "publicwriter",
+      email: "public-writer@example.com",
+      password: "password123",
+    });
+
+    const response = await request(app).get("/api/users/publicwriter");
+
+    expect(response.status).toBe(200);
+    expect(response.body.data.username).toBe("publicwriter");
+    expect(response.body.data.email).toBeUndefined();
+  });
+
   it("rejects invalid post ids before hitting database casts", async () => {
     const cookies = await createSessionCookies();
     const response = await request(app)
