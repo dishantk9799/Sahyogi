@@ -12,6 +12,10 @@ function entityId(value) {
   return value?._id ? value._id.toString() : value.toString();
 }
 
+function plainContent(content) {
+  return content?.toObject ? content.toObject() : content;
+}
+
 async function assertPublicationOwner(publicationId, user) {
   const publication = await publicationsRepository.findById(publicationId);
   if (!publication) {
@@ -89,7 +93,10 @@ export const postsService = {
       }
     }
     if (data.content) {
-      update.content = sanitizePostContent(data.content);
+      update.content = sanitizePostContent({
+        ...plainContent(post.content),
+        ...data.content,
+      });
     }
     if (data.content?.text) {
       update.readTimeMinutes = calculateReadTime(data.content.text);

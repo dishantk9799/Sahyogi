@@ -229,4 +229,108 @@ describe("auth", () => {
     expect(duplicatePost.status).toBe(409);
     expect(duplicatePost.body.message).toBe("Post slug is already in use");
   });
+
+  it("updates publication fields without resetting existing values", async () => {
+    const cookies = await createSessionCookies();
+    const publication = await request(app)
+      .post("/api/publications")
+      .set("Cookie", cookies)
+      .send({
+        name: "Partial Publication",
+        slug: "partial-publication",
+        description: "Keep this description",
+        tagline: "Original tagline",
+      });
+
+    const response = await request(app)
+      .patch(`/api/publications/${publication.body.data.id}`)
+      .set("Cookie", cookies)
+      .send({ tagline: "Updated tagline" });
+
+    expect(response.status).toBe(200);
+    expect(response.body.data.description).toBe("Keep this description");
+    expect(response.body.data.tagline).toBe("Updated tagline");
+  });
+
+  it("rejects empty publication patches", async () => {
+    const cookies = await createSessionCookies();
+    const publication = await request(app)
+      .post("/api/publications")
+      .set("Cookie", cookies)
+      .send({
+        name: "Empty Patch Publication",
+        slug: "empty-patch-publication",
+      });
+
+    const response = await request(app)
+      .patch(`/api/publications/${publication.body.data.id}`)
+      .set("Cookie", cookies)
+      .send({});
+
+    expect(response.status).toBe(422);
+    expect(response.body.details.formErrors[0]).toBe("At least one field is required");
+  });
+
+  it("updates post fields without resetting existing content", async () => {
+    const cookies = await createSessionCookies();
+    const publication = await request(app)
+      .post("/api/publications")
+      .set("Cookie", cookies)
+      .send({
+        name: "Partial Post Publication",
+        slug: "partial-post-publication",
+      });
+    const post = await request(app)
+      .post("/api/posts")
+      .set("Cookie", cookies)
+      .send({
+        publicationId: publication.body.data.id,
+        title: "Original Post Title",
+        subtitle: "Keep this subtitle",
+        category: "Workflow",
+        tags: ["drafting", "editing"],
+        content: {
+          html: "<p>Keep this body</p>",
+          text: "Keep this body",
+        },
+      });
+
+    const response = await request(app)
+      .patch(`/api/posts/${post.body.data.id}`)
+      .set("Cookie", cookies)
+      .send({ title: "Updated Post Title" });
+
+    expect(response.status).toBe(200);
+    expect(response.body.data.title).toBe("Updated Post Title");
+    expect(response.body.data.subtitle).toBe("Keep this subtitle");
+    expect(response.body.data.category).toBe("Workflow");
+    expect(response.body.data.tags).toEqual(["drafting", "editing"]);
+    expect(response.body.data.content.text).toBe("Keep this body");
+  });
+
+  it("rejects empty post patches", async () => {
+    const cookies = await createSessionCookies();
+    const publication = await request(app)
+      .post("/api/publications")
+      .set("Cookie", cookies)
+      .send({
+        name: "Empty Patch Post Publication",
+        slug: "empty-patch-post-publication",
+      });
+    const post = await request(app)
+      .post("/api/posts")
+      .set("Cookie", cookies)
+      .send({
+        publicationId: publication.body.data.id,
+        title: "Post That Needs A Patch",
+      });
+
+    const response = await request(app)
+      .patch(`/api/posts/${post.body.data.id}`)
+      .set("Cookie", cookies)
+      .send({});
+
+    expect(response.status).toBe(422);
+    expect(response.body.details.formErrors[0]).toBe("At least one field is required");
+  });
 });

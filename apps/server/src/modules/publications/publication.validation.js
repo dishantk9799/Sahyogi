@@ -1,25 +1,29 @@
 import { z } from "zod";
 import { objectIdSchema } from "../../validators/object-id.validation.js";
+import { requirePatchFields } from "../../validators/patch.validation.js";
+
+const publicationSlugSchema = z.string().trim().min(3).max(80).regex(/^[a-zA-Z0-9-]+$/);
+
 export const createPublicationSchema = z.object({
   name: z.string().trim().min(2).max(80),
-  slug: z
-    .string()
-    .trim()
-    .min(3)
-    .max(80)
-    .regex(/^[a-zA-Z0-9-]+$/)
-    .optional(),
+  slug: publicationSlugSchema.optional(),
   description: z.string().trim().max(800).optional().default(""),
   tagline: z.string().trim().max(140).optional().default(""),
 });
-export const updatePublicationSchema = createPublicationSchema.partial().extend({
-  logoUrl: z.string().url().optional().or(z.literal("")),
-  coverUrl: z.string().url().optional().or(z.literal("")),
-  accentColor: z
-    .string()
-    .regex(/^#[0-9a-fA-F]{6}$/)
-    .optional(),
-});
+export const updatePublicationSchema = requirePatchFields(
+  z.object({
+    name: z.string().trim().min(2).max(80).optional(),
+    slug: publicationSlugSchema.optional(),
+    description: z.string().trim().max(800).optional(),
+    tagline: z.string().trim().max(140).optional(),
+    logoUrl: z.string().url().optional().or(z.literal("")),
+    coverUrl: z.string().url().optional().or(z.literal("")),
+    accentColor: z
+      .string()
+      .regex(/^#[0-9a-fA-F]{6}$/)
+      .optional(),
+  }),
+);
 export const publicationSlugParamsSchema = z.object({
   slug: z.string().trim().min(3).max(80),
 });
