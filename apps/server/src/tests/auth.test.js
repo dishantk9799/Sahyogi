@@ -458,4 +458,75 @@ describe("auth", () => {
     expect(response.status).toBe(404);
     expect(response.body.message).toBe("Publication not found");
   });
+
+  it("lists active subscribers only for the publication owner", async () => {
+    const ownerCookies = await createSessionCookies();
+    const otherWriterCookies = await createSessionCookies();
+    const publication = await request(app)
+      .post("/api/publications")
+      .set("Cookie", ownerCookies)
+      .send({
+        name: "Subscriber List Publication",
+        slug: "subscriber-list-publication",
+      });
+
+    await request(app).post("/api/publications/subscriber-list-publication/subscribe").send({
+      email: "reader@example.com",
+      source: "publication_page",
+    });
+
+    const ownerResponse = await request(app)
+      .get(`/api/publications/${publication.body.data.id}/subscribers?search=reader`)
+      .set("Cookie", ownerCookies);
+    const forbiddenResponse = await request(app)
+      .get(`/api/publications/${publication.body.data.id}/subscribers`)
+      .set("Cookie", otherWriterCookies);
+
+    expect(ownerResponse.status).toBe(200);
+    expect(ownerResponse.body.data.publication.slug).toBe("subscriber-list-publication");
+    expect(ownerResponse.body.data.subscribers).toHaveLength(1);
+    expect(ownerResponse.body.data.subscribers[0].email).toBe("reader@example.com");
+    expect(forbiddenResponse.status).toBe(403);
+    expect(forbiddenResponse.body.message).toBe("Only the owner can manage this publication");
+  });
+
+  it("unsubscribes and resubscribes readers without duplicate key failures", async () => {
+    const ownerCookies = await createSessionCookies();
+    const publication = await request(app)
+      .post("/api/publications")
+      .set("Cookie", ownerCookies)
+      .send({
+        name: "Resubscribe Publication",
+        slug: "resubscribe-publication",
+      });
+
+    const subscribeResponse = await request(app)
+      .post("/api/publications/resubscribe-publication/subscribe")
+      .send({
+        email: "reader@example.com",
+        source: "publication_page",
+      });
+    const unsubscribeResponse = await request(app)
+      .post("/api/publications/resubscribe-publication/unsubscribe")
+      .send({ email: "reader@example.com" });
+    const emptyListResponse = await request(app)
+      .get(`/api/publications/${publication.body.data.id}/subscribers`)
+      .set("Cookie", ownerCookies);
+    const resubscribeResponse = await request(app)
+      .post("/api/publications/resubscribe-publication/subscribe")
+      .send({
+        email: "reader@example.com",
+        source: "publication_page",
+      });
+
+    expect(subscribeResponse.status).toBe(200);
+    expect(subscribeResponse.body.data.publication.subscriberCount).toBe(1);
+    expect(unsubscribeResponse.status).toBe(200);
+    expect(unsubscribeResponse.body.data.status).toBe("unsubscribed");
+    expect(unsubscribeResponse.body.data.publication.subscriberCount).toBe(0);
+    expect(emptyListResponse.body.data.subscribers).toHaveLength(0);
+    expect(resubscribeResponse.status).toBe(200);
+    expect(resubscribeResponse.body.data.status).toBe("subscribed");
+    expect(resubscribeResponse.body.data.publication.subscriberCount).toBe(1);
+  });
 });

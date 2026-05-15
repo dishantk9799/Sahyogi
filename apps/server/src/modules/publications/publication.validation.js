@@ -2,7 +2,12 @@ import { z } from "zod";
 import { objectIdSchema } from "../../validators/object-id.validation.js";
 import { requirePatchFields } from "../../validators/patch.validation.js";
 
-const publicationSlugSchema = z.string().trim().min(3).max(80).regex(/^[a-zA-Z0-9-]+$/);
+const publicationSlugSchema = z
+  .string()
+  .trim()
+  .min(3)
+  .max(80)
+  .regex(/^[a-zA-Z0-9-]+$/);
 
 export const createPublicationSchema = z.object({
   name: z.string().trim().min(2).max(80),
@@ -33,4 +38,11 @@ export const publicationIdParamsSchema = z.object({
 export const subscribeSchema = z.object({
   email: z.string().trim().email().toLowerCase(),
   source: z.string().trim().max(80).optional().default("web"),
+});
+export const unsubscribeSchema = z.object({
+  email: z.string().trim().email().toLowerCase(),
+});
+export const listSubscribersQuerySchema = z.object({
+  search: z.string().trim().max(120).optional(),
+  limit: z.coerce.number().int().min(1).max(100).optional().default(50),
 });

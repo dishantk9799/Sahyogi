@@ -4,9 +4,11 @@ import { validateRequest } from "../../middlewares/validate.middleware.js";
 import { publicationsController } from "./publication.controller.js";
 import {
   createPublicationSchema,
+  listSubscribersQuerySchema,
   publicationIdParamsSchema,
   publicationSlugParamsSchema,
   subscribeSchema,
+  unsubscribeSchema,
   updatePublicationSchema,
 } from "./publication.validation.js";
 export const publicationRoutes = Router();
@@ -17,6 +19,13 @@ publicationRoutes.post(
   requireAuth,
   validateRequest(createPublicationSchema),
   publicationsController.create,
+);
+publicationRoutes.get(
+  "/:id/subscribers",
+  requireAuth,
+  validateRequest(publicationIdParamsSchema, "params"),
+  validateRequest(listSubscribersQuerySchema, "query"),
+  publicationsController.listSubscribers,
 );
 publicationRoutes.get(
   "/:slug",
@@ -35,4 +44,10 @@ publicationRoutes.post(
   validateRequest(publicationSlugParamsSchema, "params"),
   validateRequest(subscribeSchema),
   publicationsController.subscribe,
+);
+publicationRoutes.post(
+  "/:slug/unsubscribe",
+  validateRequest(publicationSlugParamsSchema, "params"),
+  validateRequest(unsubscribeSchema),
+  publicationsController.unsubscribe,
 );

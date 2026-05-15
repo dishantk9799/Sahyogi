@@ -23,6 +23,10 @@ export const publicationsController = {
       .status(HttpStatus.OK)
       .json(new ApiResponse(HttpStatus.OK, publications, "Your publications"));
   }),
+  listSubscribers: asyncHandler(async (req, res) => {
+    const result = await publicationsService.listSubscribers(req.user, req.params.id, req.query);
+    res.status(HttpStatus.OK).json(new ApiResponse(HttpStatus.OK, result, "Subscribers"));
+  }),
   update: asyncHandler(async (req, res) => {
     const publication = await publicationsService.update(req.user, req.params.id, req.body);
     res
@@ -31,6 +35,10 @@ export const publicationsController = {
   }),
   subscribe: asyncHandler(async (req, res) => {
     const result = await publicationsService.subscribe(req.params.slug, req.body, req.user);
+    res.status(HttpStatus.OK).json(new ApiResponse(HttpStatus.OK, result, "Subscription updated"));
+  }),
+  unsubscribe: asyncHandler(async (req, res) => {
+    const result = await publicationsService.unsubscribe(req.params.slug, req.body);
     res.status(HttpStatus.OK).json(new ApiResponse(HttpStatus.OK, result, "Subscription updated"));
   }),
 };
