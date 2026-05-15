@@ -6,6 +6,11 @@ import { createSlug } from "../../utils/slug.js";
 import { publicationsRepository } from "../publications/publication.repository.js";
 import { postsRepository } from "./post.repository.js";
 import { toPostDTO } from "./post.serializer.js";
+
+function entityId(value) {
+  return value?._id ? value._id.toString() : value.toString();
+}
+
 async function assertPublicationOwner(publicationId, user) {
   const publication = await publicationsRepository.findById(publicationId);
   if (!publication) {
@@ -61,14 +66,14 @@ export const postsService = {
       },
       scheduledFor: data.scheduledFor,
     });
-    return toPostDTO(post);
+    return toPostDTO(await postsRepository.populateRelations(post));
   },
   async update(user, postId, data) {
     const post = await postsRepository.findById(postId);
     if (!post) {
       throw new ApiError(HttpStatus.NOT_FOUND, "Post not found");
     }
-    await assertPublicationOwner(post.publicationId.toString(), user);
+    await assertPublicationOwner(entityId(post.publicationId), user);
     const update = { ...data };
     if (data.slug) {
       update.slug = data.slug.toLowerCase();
@@ -88,7 +93,7 @@ export const postsService = {
     if (!post) {
       throw new ApiError(HttpStatus.NOT_FOUND, "Post not found");
     }
-    await assertPublicationOwner(post.publicationId.toString(), user);
+    await assertPublicationOwner(entityId(post.publicationId), user);
     const updated = await postsRepository.updateById(postId, {
       status: "published",
       publishedAt: post.publishedAt ?? new Date(),
@@ -101,7 +106,7 @@ export const postsService = {
     if (!post) {
       throw new ApiError(HttpStatus.NOT_FOUND, "Post not found");
     }
-    await assertPublicationOwner(post.publicationId.toString(), user);
+    await assertPublicationOwner(entityId(post.publicationId), user);
     const updated = await postsRepository.updateById(postId, {
       status: "draft",
       publishedAt: undefined,

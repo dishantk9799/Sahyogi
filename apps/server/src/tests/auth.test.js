@@ -120,4 +120,41 @@ describe("auth", () => {
       "publicationId must be a valid MongoDB ObjectId",
     );
   });
+
+  it("returns author and publication summaries for published posts", async () => {
+    const cookies = await createSessionCookies();
+    const publicationResponse = await request(app)
+      .post("/api/publications")
+      .set("Cookie", cookies)
+      .send({
+        name: "Craft Notes",
+        slug: "craft-notes",
+        tagline: "Practical essays for builders",
+      });
+
+    const postResponse = await request(app)
+      .post("/api/posts")
+      .set("Cookie", cookies)
+      .send({
+        publicationId: publicationResponse.body.data.id,
+        title: "Nested API Shape",
+        subtitle: "A contract test for the reader UI",
+        content: {
+          html: "<p>Hello</p>",
+          text: "Hello",
+        },
+      });
+
+    await request(app).post(`/api/posts/${postResponse.body.data.id}/publish`).set("Cookie", cookies);
+
+    const listResponse = await request(app).get("/api/posts");
+    const detailResponse = await request(app).get(`/api/posts/${postResponse.body.data.slug}`);
+
+    expect(listResponse.status).toBe(200);
+    expect(listResponse.body.data[0].author.fullName).toBe("Tarun Raj");
+    expect(listResponse.body.data[0].publication.name).toBe("Craft Notes");
+    expect(detailResponse.status).toBe(200);
+    expect(detailResponse.body.data.author.username).toMatch(/^tarunraj/);
+    expect(detailResponse.body.data.publication.slug).toBe("craft-notes");
+  });
 });

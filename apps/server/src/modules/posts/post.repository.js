@@ -1,8 +1,27 @@
 import mongoose from "mongoose";
 import { Post } from "./post.model.js";
+
+const postRelations = [
+  {
+    path: "authorId",
+    select: "fullName username avatarUrl bio",
+  },
+  {
+    path: "publicationId",
+    select: "name slug tagline logoUrl accentColor",
+  },
+];
+
+function withPostRelations(query) {
+  return query.populate(postRelations);
+}
+
 export const postsRepository = {
   create(data) {
     return Post.create(data);
+  },
+  populateRelations(post) {
+    return post.populate(postRelations);
   },
   findPublished(params) {
     const query = {
@@ -17,19 +36,25 @@ export const postsRepository = {
     if (params.cursor) {
       query.publishedAt = { $lt: new Date(params.cursor) };
     }
-    return Post.find(query).sort({ publishedAt: -1, createdAt: -1 }).limit(params.limit);
+    return withPostRelations(
+      Post.find(query).sort({ publishedAt: -1, createdAt: -1 }).limit(params.limit),
+    );
   },
   findBySlug(slug) {
-    return Post.findOne({ slug: slug.toLowerCase(), status: "published" });
+    return withPostRelations(Post.findOne({ slug: slug.toLowerCase(), status: "published" }));
   },
   findById(id) {
-    return Post.findById(id);
+    return withPostRelations(Post.findById(id));
   },
   findByAuthor(authorId) {
-    return Post.find({ authorId: new mongoose.Types.ObjectId(authorId) }).sort({ updatedAt: -1 });
+    return withPostRelations(
+      Post.find({ authorId: new mongoose.Types.ObjectId(authorId) }).sort({ updatedAt: -1 }),
+    );
   },
   updateById(id, data) {
-    return Post.findByIdAndUpdate(id, { $set: data }, { new: true, runValidators: true });
+    return withPostRelations(
+      Post.findByIdAndUpdate(id, { $set: data }, { new: true, runValidators: true }),
+    );
   },
   countByAuthor(authorId) {
     return Post.countDocuments({ authorId });
