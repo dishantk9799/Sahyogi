@@ -1,0 +1,13 @@
+import { Router } from "express";
+import { requireAuth } from "../../middlewares/auth.middleware.js";
+import { authRateLimiter } from "../../middlewares/rate-limit.middleware.js";
+import { validateRequest } from "../../middlewares/validate.middleware.js";
+import { authController } from "./auth.controller.js";
+import { loginSchema, signupSchema } from "./auth.validation.js";
+export const authRoutes = Router();
+authRoutes.post("/signup", authRateLimiter, validateRequest(signupSchema), authController.signup);
+authRoutes.post("/register", authRateLimiter, validateRequest(signupSchema), authController.signup);
+authRoutes.post("/login", authRateLimiter, validateRequest(loginSchema), authController.login);
+authRoutes.post("/refresh", authController.refresh);
+authRoutes.post("/logout", authController.logout);
+authRoutes.get("/me", requireAuth, authController.me);
