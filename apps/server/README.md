@@ -1,6 +1,6 @@
 # Sahyogi Server
 
-Express + TypeScript API for the publishing platform.
+Express JavaScript API for the publishing platform.
 
 ## Architecture
 
@@ -11,9 +11,10 @@ src/
   constants/      HTTP and cookie constants
   middlewares/    auth, validation, rate limiting, error handling
   routes/         API route composition
+  validators/     shared request validation helpers
   utils/          framework-neutral helpers
   docs/           API contract notes
-  tests/          Jest + Supertest integration tests
+  tests/          Vitest + Supertest integration tests
 ```
 
 Request flow:
@@ -34,3 +35,14 @@ npm run build -w @sahyogi/server
 
 Copy `.env.example` to `.env` and fill production secrets. `MONGO_URI` is the
 single MongoDB variable used by the API.
+
+Required production variables:
+
+```txt
+PORT
+MONGO_URI
+JWT_ACCESS_SECRET
+JWT_REFRESH_SECRET
+CLIENT_URL
+NODE_ENV
+```

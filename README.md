@@ -8,7 +8,7 @@ This repository uses npm workspaces:
 ```txt
 apps/
   web/      Next.js App Router frontend
-  server/   Express + TypeScript API
+  server/   Express JavaScript API
 ```
 
 ## Commands
@@ -17,7 +17,6 @@ apps/
 npm install
 npm run dev
 npm run lint
-npm run typecheck
 npm run test:run
 npm run build
 ```
@@ -32,3 +31,6 @@ cp apps/web/.env.example apps/web/.env.local
 ```
 
 Never commit real environment secrets.
+
+`NEXT_PUBLIC_API_URL` powers server-side content fetches and the Next.js `/api`
+rewrite used by browser requests.
