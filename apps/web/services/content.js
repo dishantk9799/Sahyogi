@@ -22,16 +22,22 @@ async function apiFetch(path) {
 }
 export async function getFeaturedPosts() {
   const posts = await apiFetch("/api/posts");
-  return posts?.length ? posts : seedPosts;
+  if (posts?.length) {
+    return posts;
+  }
+
+  return apiUrl ? [] : seedPosts;
 }
 export async function getPost(slug) {
   const post = await apiFetch(`/api/posts/${slug}`);
-  return post ?? seedPosts.find((item) => item.slug === slug) ?? seedPosts[0];
+  return post ?? (!apiUrl ? seedPosts.find((item) => item.slug === slug) : null) ?? null;
 }
 export async function getPublications() {
   return seedPublications;
 }
 export async function getPublication(slug) {
   const publication = await apiFetch(`/api/publications/${slug}`);
-  return publication ?? seedPublications.find((item) => item.slug === slug) ?? seedPublications[0];
+  return (
+    publication ?? (!apiUrl ? seedPublications.find((item) => item.slug === slug) : null) ?? null
+  );
 }

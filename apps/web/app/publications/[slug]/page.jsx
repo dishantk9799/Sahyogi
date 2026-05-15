@@ -1,3 +1,4 @@
+import { notFound } from "next/navigation";
 import { SiteHeader } from "@/components/site/site-header";
 import { SubscribeForm } from "@/components/content/subscribe-form";
 import { PostCard } from "@/components/content/post-card";
@@ -5,6 +6,12 @@ import { getFeaturedPosts, getPublication } from "@/services/content";
 export async function generateMetadata({ params }) {
   const { slug } = await params;
   const publication = await getPublication(slug);
+  if (!publication) {
+    return {
+      title: "Publication not found",
+    };
+  }
+
   return {
     title: publication.name,
     description: publication.tagline,
@@ -13,6 +20,10 @@ export async function generateMetadata({ params }) {
 export default async function PublicationPage({ params }) {
   const { slug } = await params;
   const [publication, posts] = await Promise.all([getPublication(slug), getFeaturedPosts()]);
+  if (!publication) {
+    notFound();
+  }
+
   return (
     <>
       <SiteHeader />

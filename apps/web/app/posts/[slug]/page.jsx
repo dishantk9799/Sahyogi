@@ -1,4 +1,5 @@
 import { format } from "date-fns";
+import { notFound } from "next/navigation";
 import { SiteHeader } from "@/components/site/site-header";
 import { Avatar } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
@@ -8,6 +9,12 @@ import { getPost } from "@/services/content";
 export async function generateMetadata({ params }) {
   const { slug } = await params;
   const post = await getPost(slug);
+  if (!post) {
+    return {
+      title: "Post not found",
+    };
+  }
+
   return {
     title: post.title,
     description: post.subtitle,
@@ -16,6 +23,10 @@ export async function generateMetadata({ params }) {
 export default async function PostPage({ params }) {
   const { slug } = await params;
   const post = await getPost(slug);
+  if (!post) {
+    notFound();
+  }
+
   return (
     <>
       <SiteHeader />
@@ -24,7 +35,8 @@ export default async function PostPage({ params }) {
           <div className="flex flex-wrap items-center gap-2">
             <Badge variant="outline">{post.category}</Badge>
             <span className="text-sm text-muted-foreground">
-              {format(new Date(post.publishedAt), "MMMM d, yyyy")} · {post.readTimeMinutes} min read
+              {format(new Date(post.publishedAt), "MMMM d, yyyy")} &middot;{" "}
+              {post.readTimeMinutes} min read
             </span>
           </div>
           <h1 className="mt-6 font-serif text-5xl leading-tight sm:text-6xl">{post.title}</h1>

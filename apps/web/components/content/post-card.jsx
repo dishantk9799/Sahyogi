@@ -17,7 +17,7 @@ export function PostCard({ post, featured = false }) {
         <div className="flex flex-wrap items-center gap-2">
           <Badge variant="outline">{post.category}</Badge>
           <span className="text-xs text-muted-foreground">
-            {format(new Date(post.publishedAt), "MMM d")} · {post.readTimeMinutes} min read
+            {format(new Date(post.publishedAt), "MMM d")} &middot; {post.readTimeMinutes} min read
           </span>
         </div>
         <div>
