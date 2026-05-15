@@ -10,11 +10,18 @@ import { EditorContent, useEditor } from "@tiptap/react";
 import StarterKit from "@tiptap/starter-kit";
 import { all, createLowlight } from "lowlight";
 import { Bold, Code2, Heading2, ImagePlus, Italic, List, Quote, Table2 } from "lucide-react";
+import { useRef, useState } from "react";
+import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
+import { getApiErrorMessage } from "@/services/api";
+import { uploadImage } from "@/services/uploads";
 const lowlight = createLowlight(all);
-const defaultContent = "<h2>Untitled issue</h2><p>Start with the strongest promise to your reader.</p>";
+const defaultContent =
+  "<h2>Untitled issue</h2><p>Start with the strongest promise to your reader.</p>";
 
 export function RichEditor({ initialContent = defaultContent, onChange }) {
+  const imageInputRef = useRef(null);
+  const [uploadingImage, setUploadingImage] = useState(false);
   const editor = useEditor({
     immediatelyRender: false,
     extensions: [
@@ -65,16 +72,39 @@ export function RichEditor({ initialContent = defaultContent, onChange }) {
     {
       label: "Image",
       icon: ImagePlus,
-      run: () => {
-        const src = window.prompt("Paste an image URL");
-        if (src) {
-          editor?.chain().focus().setImage({ src }).run();
-        }
-      },
+      run: () => imageInputRef.current?.click(),
     },
   ];
+
+  async function handleImageUpload(event) {
+    const file = event.target.files?.[0];
+    if (!file) {
+      return;
+    }
+
+    setUploadingImage(true);
+
+    try {
+      const image = await uploadImage(file);
+      editor?.chain().focus().setImage({ src: image.url }).run();
+      toast.success("Image inserted");
+    } catch (error) {
+      toast.error(getApiErrorMessage(error, "Image could not be uploaded"));
+    } finally {
+      setUploadingImage(false);
+      event.target.value = "";
+    }
+  }
+
   return (
     <div>
+      <input
+        ref={imageInputRef}
+        type="file"
+        accept="image/*"
+        className="hidden"
+        onChange={handleImageUpload}
+      />
       <div className="flex flex-wrap gap-1 rounded-t-lg border bg-card p-2">
         {actions.map((action) => (
           <Button
@@ -84,6 +114,7 @@ export function RichEditor({ initialContent = defaultContent, onChange }) {
             size="icon"
             title={action.label}
             aria-label={action.label}
+            disabled={action.label === "Image" && uploadingImage}
             onClick={action.run}
           >
             <action.icon className="h-4 w-4" />

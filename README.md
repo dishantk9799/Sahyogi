@@ -32,9 +32,18 @@ cp apps/web/.env.example apps/web/.env.local
 
 Never commit real environment secrets.
 
-`NEXT_PUBLIC_API_URL` points at the Express API root, for example
+Local web runs on `http://localhost:5173` so it matches the backend
+`CLIENT_URL`. `NEXT_PUBLIC_API_URL` points at the Express API root, for example
 `http://localhost:5000/api`. It powers server-side content fetches and the
 Next.js `/api` rewrite used by browser requests.
+
+The server accepts either `JWT_ACCESS_SECRET` plus `JWT_REFRESH_SECRET`, or the
+legacy single `JWT_SECRET` used by older deployments. Prefer split secrets for
+new production environments.
+
+Image uploads use the configured Cloudinary account through the Express API.
+Authenticated users can upload editor images, post covers, profile images, and
+publication branding images without hardcoded image URLs.
 
 ## Deployment Notes
 

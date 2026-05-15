@@ -9,6 +9,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { getApiErrorMessage } from "@/services/api";
 import { getMyPublications } from "@/services/publications";
 import { createPost, publishPost, updatePost } from "@/services/posts";
+import { uploadImage } from "@/services/uploads";
 import { editorPostSchema } from "@/validations/post";
 
 const RichEditor = dynamic(
@@ -31,9 +32,7 @@ function tagsFromInput(value) {
 }
 
 function errorMapFromZod(error) {
-  return Object.fromEntries(
-    error.issues.map((issue) => [issue.path.join("."), issue.message]),
-  );
+  return Object.fromEntries(error.issues.map((issue) => [issue.path.join("."), issue.message]));
 }
 
 export function EditorWorkspace() {
@@ -52,6 +51,7 @@ export function EditorWorkspace() {
   const [errors, setErrors] = useState({});
   const [saving, setSaving] = useState(false);
   const [publishing, setPublishing] = useState(false);
+  const [uploadingCover, setUploadingCover] = useState(false);
   const [loadError, setLoadError] = useState("");
 
   useEffect(() => {
@@ -164,6 +164,26 @@ export function EditorWorkspace() {
     }
   }
 
+  async function uploadCover(event) {
+    const file = event.target.files?.[0];
+    if (!file) {
+      return;
+    }
+
+    setUploadingCover(true);
+
+    try {
+      const image = await uploadImage(file);
+      setCoverImageUrl(image.url);
+      toast.success("Cover image uploaded");
+    } catch (error) {
+      toast.error(getApiErrorMessage(error, "Cover image could not be uploaded"));
+    } finally {
+      setUploadingCover(false);
+      event.target.value = "";
+    }
+  }
+
   return (
     <>
       <div className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
@@ -246,6 +266,16 @@ export function EditorWorkspace() {
                   onChange={(event) => setCoverImageUrl(event.target.value)}
                   placeholder="https://..."
                 />
+                <Input
+                  id="cover-file"
+                  type="file"
+                  accept="image/*"
+                  disabled={uploadingCover}
+                  onChange={uploadCover}
+                />
+                {uploadingCover ? (
+                  <p className="text-xs text-muted-foreground">Uploading cover image...</p>
+                ) : null}
                 {errors.coverImageUrl ? (
                   <p className="text-xs text-destructive">{errors.coverImageUrl}</p>
                 ) : null}
@@ -277,9 +307,7 @@ export function EditorWorkspace() {
                   placeholder="publishing, product, writing"
                 />
                 {savedPost ? (
-                  <p className="text-xs text-muted-foreground">
-                    Last saved as {savedPost.status}.
-                  </p>
+                  <p className="text-xs text-muted-foreground">Last saved as {savedPost.status}.</p>
                 ) : null}
               </div>
             </div>

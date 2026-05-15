@@ -36,9 +36,14 @@ const testDefaults = {
   JWT_ACCESS_SECRET: "test-access-secret-with-enough-length",
   JWT_REFRESH_SECRET: "test-refresh-secret-with-enough-length",
 };
-const rawEnv = {
+const baseEnv = {
   ...(process.env.NODE_ENV === "test" ? testDefaults : {}),
   ...process.env,
+};
+const rawEnv = {
+  ...baseEnv,
+  JWT_ACCESS_SECRET: baseEnv.JWT_ACCESS_SECRET || baseEnv.JWT_SECRET,
+  JWT_REFRESH_SECRET: baseEnv.JWT_REFRESH_SECRET || baseEnv.JWT_SECRET,
 };
 const parsedEnv = envSchema.safeParse(rawEnv);
 if (!parsedEnv.success) {

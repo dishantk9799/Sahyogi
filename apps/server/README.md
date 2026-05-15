@@ -52,3 +52,8 @@ NODE_ENV
 
 Keep `ENABLE_SWAGGER=false` in production unless the docs route should be
 public. Set `TRUST_PROXY=true` only behind a trusted platform proxy.
+
+Older deployments that already define `JWT_SECRET` still work. New deployments
+should prefer separate `JWT_ACCESS_SECRET` and `JWT_REFRESH_SECRET` values.
+
+Cloudinary variables power authenticated image uploads through `/api/uploads/image`.

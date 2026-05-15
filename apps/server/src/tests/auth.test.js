@@ -199,6 +199,20 @@ describe("auth", () => {
     );
   });
 
+  it("protects image upload endpoints", async () => {
+    const response = await request(app).post("/api/uploads/image");
+
+    expect(response.status).toBe(401);
+  });
+
+  it("validates missing image uploads", async () => {
+    const cookies = await createSessionCookies();
+    const response = await request(app).post("/api/uploads/image").set("Cookie", cookies);
+
+    expect(response.status).toBe(422);
+    expect(response.body.message).toBe("Image file is required");
+  });
+
   it("returns author and publication summaries for published posts", async () => {
     const cookies = await createSessionCookies();
     const publicationResponse = await request(app)

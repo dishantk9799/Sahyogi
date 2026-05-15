@@ -12,6 +12,7 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { getApiErrorMessage } from "@/services/api";
 import { createPublication, getMyPublications, updatePublication } from "@/services/publications";
+import { uploadImage } from "@/services/uploads";
 import { getCurrentUser, updateProfile } from "@/services/users";
 import { profileSettingsSchema, publicationSettingsSchema } from "@/validations/settings";
 
@@ -78,6 +79,7 @@ export function SettingsManagement() {
   const [selectedPublicationId, setSelectedPublicationId] = useState("");
   const [loading, setLoading] = useState(true);
   const [loadError, setLoadError] = useState("");
+  const [uploadingField, setUploadingField] = useState("");
 
   const profileForm = useForm({
     resolver: zodResolver(profileSettingsSchema),
@@ -162,6 +164,46 @@ export function SettingsManagement() {
     }
   }
 
+  async function uploadProfileImage(field, event) {
+    const file = event.target.files?.[0];
+    if (!file) {
+      return;
+    }
+
+    setUploadingField(field);
+
+    try {
+      const image = await uploadImage(file);
+      profileForm.setValue(field, image.url, { shouldDirty: true, shouldValidate: true });
+      toast.success("Image uploaded");
+    } catch (requestError) {
+      toast.error(getApiErrorMessage(requestError, "Image could not be uploaded"));
+    } finally {
+      setUploadingField("");
+      event.target.value = "";
+    }
+  }
+
+  async function uploadPublicationImage(field, event) {
+    const file = event.target.files?.[0];
+    if (!file) {
+      return;
+    }
+
+    setUploadingField(field);
+
+    try {
+      const image = await uploadImage(file);
+      publicationForm.setValue(field, image.url, { shouldDirty: true, shouldValidate: true });
+      toast.success("Image uploaded");
+    } catch (requestError) {
+      toast.error(getApiErrorMessage(requestError, "Image could not be uploaded"));
+    } finally {
+      setUploadingField("");
+      event.target.value = "";
+    }
+  }
+
   return (
     <>
       <h1 className="text-3xl font-semibold">Settings</h1>
@@ -194,6 +236,16 @@ export function SettingsManagement() {
                     placeholder="https://..."
                     {...profileForm.register("avatarUrl")}
                   />
+                  <Input
+                    id="avatarFile"
+                    type="file"
+                    accept="image/*"
+                    disabled={Boolean(uploadingField)}
+                    onChange={(event) => uploadProfileImage("avatarUrl", event)}
+                  />
+                  {uploadingField === "avatarUrl" ? (
+                    <p className="text-xs text-muted-foreground">Uploading avatar...</p>
+                  ) : null}
                   <FieldError error={profileForm.formState.errors.avatarUrl} />
                 </div>
                 <div className="space-y-2">
@@ -203,6 +255,16 @@ export function SettingsManagement() {
                     placeholder="https://..."
                     {...profileForm.register("bannerUrl")}
                   />
+                  <Input
+                    id="bannerFile"
+                    type="file"
+                    accept="image/*"
+                    disabled={Boolean(uploadingField)}
+                    onChange={(event) => uploadProfileImage("bannerUrl", event)}
+                  />
+                  {uploadingField === "bannerUrl" ? (
+                    <p className="text-xs text-muted-foreground">Uploading banner...</p>
+                  ) : null}
                   <FieldError error={profileForm.formState.errors.bannerUrl} />
                 </div>
                 <div className="grid gap-4 sm:grid-cols-2">
@@ -302,6 +364,16 @@ export function SettingsManagement() {
                       placeholder="https://..."
                       {...publicationForm.register("logoUrl")}
                     />
+                    <Input
+                      id="logoFile"
+                      type="file"
+                      accept="image/*"
+                      disabled={Boolean(uploadingField)}
+                      onChange={(event) => uploadPublicationImage("logoUrl", event)}
+                    />
+                    {uploadingField === "logoUrl" ? (
+                      <p className="text-xs text-muted-foreground">Uploading logo...</p>
+                    ) : null}
                     <FieldError error={publicationForm.formState.errors.logoUrl} />
                   </div>
                   <div className="space-y-2">
@@ -311,6 +383,16 @@ export function SettingsManagement() {
                       placeholder="https://..."
                       {...publicationForm.register("coverUrl")}
                     />
+                    <Input
+                      id="publicationCoverFile"
+                      type="file"
+                      accept="image/*"
+                      disabled={Boolean(uploadingField)}
+                      onChange={(event) => uploadPublicationImage("coverUrl", event)}
+                    />
+                    {uploadingField === "coverUrl" ? (
+                      <p className="text-xs text-muted-foreground">Uploading cover...</p>
+                    ) : null}
                     <FieldError error={publicationForm.formState.errors.coverUrl} />
                   </div>
                 </div>
