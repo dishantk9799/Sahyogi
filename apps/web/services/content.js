@@ -1,6 +1,19 @@
 import { seedPosts, seedPublications } from "@/services/seed-data";
 import { apiRootUrl, buildApiUrl } from "@/services/api-config";
 
+function withQuery(path, params = {}) {
+  const query = new URLSearchParams();
+
+  Object.entries(params).forEach(([key, value]) => {
+    if (value) {
+      query.set(key, value);
+    }
+  });
+
+  const queryString = query.toString();
+  return queryString ? `${path}?${queryString}` : path;
+}
+
 async function apiFetch(path) {
   const url = buildApiUrl(path);
 
@@ -24,8 +37,8 @@ async function apiFetch(path) {
     return null;
   }
 }
-export async function getFeaturedPosts() {
-  const posts = await apiFetch("/api/posts");
+export async function getFeaturedPosts(params = {}) {
+  const posts = await apiFetch(withQuery("/api/posts", params));
   if (posts?.length) {
     return posts;
   }
