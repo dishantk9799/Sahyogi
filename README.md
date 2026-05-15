@@ -32,5 +32,6 @@ cp apps/web/.env.example apps/web/.env.local
 
 Never commit real environment secrets.
 
-`NEXT_PUBLIC_API_URL` powers server-side content fetches and the Next.js `/api`
-rewrite used by browser requests.
+`NEXT_PUBLIC_API_URL` points at the Express API root, for example
+`http://localhost:5000/api`. It powers server-side content fetches and the
+Next.js `/api` rewrite used by browser requests.

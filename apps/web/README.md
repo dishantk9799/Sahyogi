@@ -14,6 +14,6 @@ npm run build -w @sahyogi/web
 
 Copy `.env.example` to `.env.local`.
 
-`NEXT_PUBLIC_API_URL` should point at the Express server, for example
-`http://localhost:5000`. Browser requests use relative `/api` paths so the Next
-rewrite can keep cookies same-origin.
+`NEXT_PUBLIC_API_URL` should point at the Express API root, for example
+`http://localhost:5000/api`. Browser requests use relative `/api` paths so the
+Next rewrite can keep cookies same-origin.

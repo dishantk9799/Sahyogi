@@ -1,11 +1,15 @@
 import { seedPosts, seedPublications } from "@/services/seed-data";
-const apiUrl = process.env.NEXT_PUBLIC_API_URL;
+import { apiRootUrl, buildApiUrl } from "@/services/api-config";
+
 async function apiFetch(path) {
-  if (!apiUrl) {
+  const url = buildApiUrl(path);
+
+  if (!url) {
     return null;
   }
+
   try {
-    const response = await fetch(`${apiUrl}${path}`, {
+    const response = await fetch(url, {
       cache: "no-store",
       headers: {
         Accept: "application/json",
@@ -26,11 +30,11 @@ export async function getFeaturedPosts() {
     return posts;
   }
 
-  return apiUrl ? [] : seedPosts;
+  return apiRootUrl ? [] : seedPosts;
 }
 export async function getPost(slug) {
   const post = await apiFetch(`/api/posts/${slug}`);
-  return post ?? (!apiUrl ? seedPosts.find((item) => item.slug === slug) : null) ?? null;
+  return post ?? (!apiRootUrl ? seedPosts.find((item) => item.slug === slug) : null) ?? null;
 }
 export async function getPublications() {
   return seedPublications;
@@ -38,6 +42,8 @@ export async function getPublications() {
 export async function getPublication(slug) {
   const publication = await apiFetch(`/api/publications/${slug}`);
   return (
-    publication ?? (!apiUrl ? seedPublications.find((item) => item.slug === slug) : null) ?? null
+    publication ??
+    (!apiRootUrl ? seedPublications.find((item) => item.slug === slug) : null) ??
+    null
   );
 }
