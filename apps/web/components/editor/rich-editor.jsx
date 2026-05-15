@@ -12,7 +12,9 @@ import { all, createLowlight } from "lowlight";
 import { Bold, Code2, Heading2, ImagePlus, Italic, List, Quote, Table2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 const lowlight = createLowlight(all);
-export function RichEditor() {
+const defaultContent = "<h2>Untitled issue</h2><p>Start with the strongest promise to your reader.</p>";
+
+export function RichEditor({ initialContent = defaultContent, onChange }) {
   const editor = useEditor({
     immediatelyRender: false,
     extensions: [
@@ -29,7 +31,13 @@ export function RichEditor() {
       TableCell,
       CodeBlockLowlight.configure({ lowlight }),
     ],
-    content: "<h2>Untitled issue</h2><p>Start with the strongest promise to your reader.</p>",
+    content: initialContent,
+    onUpdate({ editor: nextEditor }) {
+      onChange?.({
+        html: nextEditor.getHTML(),
+        text: nextEditor.getText(),
+      });
+    },
     editorProps: {
       attributes: {
         class:
@@ -57,12 +65,12 @@ export function RichEditor() {
     {
       label: "Image",
       icon: ImagePlus,
-      run: () =>
-        editor
-          ?.chain()
-          .focus()
-          .setImage({ src: "https://images.unsplash.com/photo-1499750310107-5fef28a66643" })
-          .run(),
+      run: () => {
+        const src = window.prompt("Paste an image URL");
+        if (src) {
+          editor?.chain().focus().setImage({ src }).run();
+        }
+      },
     },
   ];
   return (
