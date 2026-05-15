@@ -11,6 +11,8 @@ coverage/
 # local env
 .env
 .env.*
+apps/server/.env
+apps/web/.env.local
 !.env.example
 !.env.*.example
 
