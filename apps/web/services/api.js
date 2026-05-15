@@ -6,3 +6,7 @@ export const api = axios.create({
     "Content-Type": "application/json",
   },
 });
+
+export function getApiErrorMessage(error, fallback = "Something went wrong") {
+  return error?.response?.data?.message || fallback;
+}

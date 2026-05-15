@@ -1,7 +1,12 @@
+"use client";
+
 import Link from "next/link";
+import { useEffect, useState } from "react";
 import { BarChart3, FileText, Settings, Users } from "lucide-react";
+import { useRouter } from "next/navigation";
 import { SiteHeader } from "@/components/site/site-header";
 import { Button } from "@/components/ui/button";
+import { api } from "@/services/api";
 const dashboardNav = [
   { href: "/dashboard", label: "Overview", icon: BarChart3 },
   { href: "/dashboard/posts", label: "Posts", icon: FileText },
@@ -9,6 +14,30 @@ const dashboardNav = [
   { href: "/dashboard/settings", label: "Settings", icon: Settings },
 ];
 export function DashboardShell({ children }) {
+  const router = useRouter();
+  const [checkingSession, setCheckingSession] = useState(true);
+
+  useEffect(() => {
+    let mounted = true;
+
+    async function verifySession() {
+      try {
+        await api.get("/api/auth/me");
+        if (mounted) {
+          setCheckingSession(false);
+        }
+      } catch {
+        router.replace("/login");
+      }
+    }
+
+    verifySession();
+
+    return () => {
+      mounted = false;
+    };
+  }, [router]);
+
   return (
     <>
       <SiteHeader />
@@ -25,7 +54,15 @@ export function DashboardShell({ children }) {
             ))}
           </nav>
         </aside>
-        <section>{children}</section>
+        <section>
+          {checkingSession ? (
+            <div className="rounded-lg border bg-card p-6">
+              <p className="text-sm text-muted-foreground">Checking your session...</p>
+            </div>
+          ) : (
+            children
+          )}
+        </section>
       </main>
     </>
   );
