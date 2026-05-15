@@ -62,6 +62,9 @@ export const postsRepository = {
       Post.findByIdAndUpdate(id, { $set: data }, { new: true, runValidators: true }),
     );
   },
+  deleteById(id) {
+    return withPostRelations(Post.findByIdAndDelete(id));
+  },
   countByAuthor(authorId) {
     return Post.countDocuments({ authorId });
   },

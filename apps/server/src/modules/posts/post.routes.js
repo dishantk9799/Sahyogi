@@ -37,3 +37,9 @@ postRoutes.post(
   validateRequest(postIdParamsSchema, "params"),
   postsController.unpublish,
 );
+postRoutes.delete(
+  "/:id",
+  requireAuth,
+  validateRequest(postIdParamsSchema, "params"),
+  postsController.remove,
+);

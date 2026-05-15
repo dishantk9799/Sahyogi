@@ -35,4 +35,8 @@ export const postsController = {
     const post = await postsService.unpublish(req.user, req.params.id);
     res.status(HttpStatus.OK).json(new ApiResponse(HttpStatus.OK, post, "Post unpublished"));
   }),
+  remove: asyncHandler(async (req, res) => {
+    const post = await postsService.remove(req.user, req.params.id);
+    res.status(HttpStatus.OK).json(new ApiResponse(HttpStatus.OK, post, "Post deleted"));
+  }),
 };

@@ -160,7 +160,9 @@ describe("auth", () => {
         },
       });
 
-    await request(app).post(`/api/posts/${postResponse.body.data.id}/publish`).set("Cookie", cookies);
+    await request(app)
+      .post(`/api/posts/${postResponse.body.data.id}/publish`)
+      .set("Cookie", cookies);
 
     const listResponse = await request(app).get("/api/posts");
     const detailResponse = await request(app).get(`/api/posts/${postResponse.body.data.slug}`);
@@ -247,15 +249,12 @@ describe("auth", () => {
 
   it("updates publication fields without resetting existing values", async () => {
     const cookies = await createSessionCookies();
-    const publication = await request(app)
-      .post("/api/publications")
-      .set("Cookie", cookies)
-      .send({
-        name: "Partial Publication",
-        slug: "partial-publication",
-        description: "Keep this description",
-        tagline: "Original tagline",
-      });
+    const publication = await request(app).post("/api/publications").set("Cookie", cookies).send({
+      name: "Partial Publication",
+      slug: "partial-publication",
+      description: "Keep this description",
+      tagline: "Original tagline",
+    });
 
     const response = await request(app)
       .patch(`/api/publications/${publication.body.data.id}`)
@@ -269,13 +268,10 @@ describe("auth", () => {
 
   it("rejects empty publication patches", async () => {
     const cookies = await createSessionCookies();
-    const publication = await request(app)
-      .post("/api/publications")
-      .set("Cookie", cookies)
-      .send({
-        name: "Empty Patch Publication",
-        slug: "empty-patch-publication",
-      });
+    const publication = await request(app).post("/api/publications").set("Cookie", cookies).send({
+      name: "Empty Patch Publication",
+      slug: "empty-patch-publication",
+    });
 
     const response = await request(app)
       .patch(`/api/publications/${publication.body.data.id}`)
@@ -288,13 +284,10 @@ describe("auth", () => {
 
   it("updates post fields without resetting existing content", async () => {
     const cookies = await createSessionCookies();
-    const publication = await request(app)
-      .post("/api/publications")
-      .set("Cookie", cookies)
-      .send({
-        name: "Partial Post Publication",
-        slug: "partial-post-publication",
-      });
+    const publication = await request(app).post("/api/publications").set("Cookie", cookies).send({
+      name: "Partial Post Publication",
+      slug: "partial-post-publication",
+    });
     const post = await request(app)
       .post("/api/posts")
       .set("Cookie", cookies)
@@ -325,20 +318,14 @@ describe("auth", () => {
 
   it("rejects empty post patches", async () => {
     const cookies = await createSessionCookies();
-    const publication = await request(app)
-      .post("/api/publications")
-      .set("Cookie", cookies)
-      .send({
-        name: "Empty Patch Post Publication",
-        slug: "empty-patch-post-publication",
-      });
-    const post = await request(app)
-      .post("/api/posts")
-      .set("Cookie", cookies)
-      .send({
-        publicationId: publication.body.data.id,
-        title: "Post That Needs A Patch",
-      });
+    const publication = await request(app).post("/api/publications").set("Cookie", cookies).send({
+      name: "Empty Patch Post Publication",
+      slug: "empty-patch-post-publication",
+    });
+    const post = await request(app).post("/api/posts").set("Cookie", cookies).send({
+      publicationId: publication.body.data.id,
+      title: "Post That Needs A Patch",
+    });
 
     const response = await request(app)
       .patch(`/api/posts/${post.body.data.id}`)
@@ -347,6 +334,79 @@ describe("auth", () => {
 
     expect(response.status).toBe(422);
     expect(response.body.details.formErrors[0]).toBe("At least one field is required");
+  });
+
+  it("publishes and unpublishes owned posts", async () => {
+    const cookies = await createSessionCookies();
+    const publication = await request(app).post("/api/publications").set("Cookie", cookies).send({
+      name: "Publish Flow Publication",
+      slug: "publish-flow-publication",
+    });
+    const post = await request(app).post("/api/posts").set("Cookie", cookies).send({
+      publicationId: publication.body.data.id,
+      title: "Publish Flow Post",
+    });
+
+    const publishResponse = await request(app)
+      .post(`/api/posts/${post.body.data.id}/publish`)
+      .set("Cookie", cookies);
+    const unpublishResponse = await request(app)
+      .post(`/api/posts/${post.body.data.id}/unpublish`)
+      .set("Cookie", cookies);
+    const publicDetailResponse = await request(app).get(`/api/posts/${post.body.data.slug}`);
+
+    expect(publishResponse.status).toBe(200);
+    expect(publishResponse.body.data.status).toBe("published");
+    expect(publishResponse.body.data.publishedAt).toBeTruthy();
+    expect(unpublishResponse.status).toBe(200);
+    expect(unpublishResponse.body.data.status).toBe("draft");
+    expect(unpublishResponse.body.data.publishedAt).toBeNull();
+    expect(publicDetailResponse.status).toBe(404);
+  });
+
+  it("deletes owned posts from the management list", async () => {
+    const cookies = await createSessionCookies();
+    const publication = await request(app).post("/api/publications").set("Cookie", cookies).send({
+      name: "Delete Flow Publication",
+      slug: "delete-flow-publication",
+    });
+    const post = await request(app).post("/api/posts").set("Cookie", cookies).send({
+      publicationId: publication.body.data.id,
+      title: "Delete Flow Post",
+    });
+
+    const deleteResponse = await request(app)
+      .delete(`/api/posts/${post.body.data.id}`)
+      .set("Cookie", cookies);
+    const listResponse = await request(app).get("/api/posts/mine").set("Cookie", cookies);
+
+    expect(deleteResponse.status).toBe(200);
+    expect(deleteResponse.body.message).toBe("Post deleted");
+    expect(listResponse.status).toBe(200);
+    expect(listResponse.body.data).toHaveLength(0);
+  });
+
+  it("prevents another writer from deleting a post", async () => {
+    const ownerCookies = await createSessionCookies();
+    const otherWriterCookies = await createSessionCookies();
+    const publication = await request(app)
+      .post("/api/publications")
+      .set("Cookie", ownerCookies)
+      .send({
+        name: "Owner Only Publication",
+        slug: "owner-only-publication",
+      });
+    const post = await request(app).post("/api/posts").set("Cookie", ownerCookies).send({
+      publicationId: publication.body.data.id,
+      title: "Owner Only Post",
+    });
+
+    const response = await request(app)
+      .delete(`/api/posts/${post.body.data.id}`)
+      .set("Cookie", otherWriterCookies);
+
+    expect(response.status).toBe(403);
+    expect(response.body.message).toBe("Only the publication owner can manage posts");
   });
 
   it("lists public publications and filters posts by publication slug", async () => {
@@ -366,20 +426,14 @@ describe("auth", () => {
         slug: "filtered-desk-two",
       });
 
-    const firstPost = await request(app)
-      .post("/api/posts")
-      .set("Cookie", cookies)
-      .send({
-        publicationId: firstPublication.body.data.id,
-        title: "Filtered First Post",
-      });
-    const secondPost = await request(app)
-      .post("/api/posts")
-      .set("Cookie", cookies)
-      .send({
-        publicationId: secondPublication.body.data.id,
-        title: "Filtered Second Post",
-      });
+    const firstPost = await request(app).post("/api/posts").set("Cookie", cookies).send({
+      publicationId: firstPublication.body.data.id,
+      title: "Filtered First Post",
+    });
+    const secondPost = await request(app).post("/api/posts").set("Cookie", cookies).send({
+      publicationId: secondPublication.body.data.id,
+      title: "Filtered Second Post",
+    });
 
     await request(app).post(`/api/posts/${firstPost.body.data.id}/publish`).set("Cookie", cookies);
     await request(app).post(`/api/posts/${secondPost.body.data.id}/publish`).set("Cookie", cookies);

@@ -127,7 +127,7 @@ export const postsService = {
     const updated = await postsRepository.updateById(postId, {
       status: "published",
       publishedAt: post.publishedAt ?? new Date(),
-      scheduledFor: undefined,
+      scheduledFor: null,
     });
     return toPostDTO(updated);
   },
@@ -139,9 +139,18 @@ export const postsService = {
     await assertPublicationOwner(entityId(post.publicationId), user);
     const updated = await postsRepository.updateById(postId, {
       status: "draft",
-      publishedAt: undefined,
-      scheduledFor: undefined,
+      publishedAt: null,
+      scheduledFor: null,
     });
     return toPostDTO(updated);
+  },
+  async remove(user, postId) {
+    const post = await postsRepository.findById(postId);
+    if (!post) {
+      throw new ApiError(HttpStatus.NOT_FOUND, "Post not found");
+    }
+    await assertPublicationOwner(entityId(post.publicationId), user);
+    const deleted = await postsRepository.deleteById(postId);
+    return toPostDTO(deleted);
   },
 };

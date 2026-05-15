@@ -19,3 +19,13 @@ export async function publishPost(postId) {
   const response = await api.post(`/api/posts/${postId}/publish`);
   return response.data.data;
 }
+
+export async function unpublishPost(postId) {
+  const response = await api.post(`/api/posts/${postId}/unpublish`);
+  return response.data.data;
+}
+
+export async function deletePost(postId) {
+  const response = await api.delete(`/api/posts/${postId}`);
+  return response.data.data;
+}
