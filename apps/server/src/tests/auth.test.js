@@ -157,4 +157,31 @@ describe("auth", () => {
     expect(detailResponse.body.data.author.username).toMatch(/^tarunraj/);
     expect(detailResponse.body.data.publication.slug).toBe("craft-notes");
   });
+
+  it("sanitizes post html before storing content", async () => {
+    const cookies = await createSessionCookies();
+    const publicationResponse = await request(app)
+      .post("/api/publications")
+      .set("Cookie", cookies)
+      .send({
+        name: "Security Notes",
+        slug: "security-notes",
+      });
+
+    const response = await request(app)
+      .post("/api/posts")
+      .set("Cookie", cookies)
+      .send({
+        publicationId: publicationResponse.body.data.id,
+        title: "Sanitized Post Content",
+        content: {
+          html: '<p>Hello<script>alert("xss")</script><a href="javascript:alert(1)">bad</a></p>',
+          text: "Hello bad",
+        },
+      });
+
+    expect(response.status).toBe(201);
+    expect(response.body.data.content.html).not.toContain("<script");
+    expect(response.body.data.content.html).not.toContain("javascript:");
+  });
 });

@@ -1,6 +1,7 @@
 import mongoose from "mongoose";
 import { HttpStatus } from "../../constants/http.js";
 import { ApiError } from "../../utils/api-error.js";
+import { sanitizePostContent } from "../../utils/post-content.js";
 import { calculateReadTime } from "../../utils/read-time.js";
 import { createSlug } from "../../utils/slug.js";
 import { publicationsRepository } from "../publications/publication.repository.js";
@@ -55,7 +56,7 @@ export const postsService = {
       slug,
       subtitle: data.subtitle,
       coverImageUrl: data.coverImageUrl,
-      content: data.content,
+      content: sanitizePostContent(data.content),
       status: data.scheduledFor ? "scheduled" : "draft",
       tags: data.tags,
       category: data.category,
@@ -77,6 +78,9 @@ export const postsService = {
     const update = { ...data };
     if (data.slug) {
       update.slug = data.slug.toLowerCase();
+    }
+    if (data.content) {
+      update.content = sanitizePostContent(data.content);
     }
     if (data.content?.text) {
       update.readTimeMinutes = calculateReadTime(data.content.text);
