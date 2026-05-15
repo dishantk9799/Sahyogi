@@ -184,4 +184,49 @@ describe("auth", () => {
     expect(response.body.data.content.html).not.toContain("<script");
     expect(response.body.data.content.html).not.toContain("javascript:");
   });
+
+  it("rejects duplicate public post slugs", async () => {
+    const cookies = await createSessionCookies();
+    const firstPublication = await request(app)
+      .post("/api/publications")
+      .set("Cookie", cookies)
+      .send({
+        name: "First Desk",
+        slug: "first-desk",
+      });
+    const secondPublication = await request(app)
+      .post("/api/publications")
+      .set("Cookie", cookies)
+      .send({
+        name: "Second Desk",
+        slug: "second-desk",
+      });
+
+    const firstPost = await request(app)
+      .post("/api/posts")
+      .set("Cookie", cookies)
+      .send({
+        publicationId: firstPublication.body.data.id,
+        title: "One Shared Slug",
+        content: {
+          html: "<p>Hello</p>",
+          text: "Hello",
+        },
+      });
+    const duplicatePost = await request(app)
+      .post("/api/posts")
+      .set("Cookie", cookies)
+      .send({
+        publicationId: secondPublication.body.data.id,
+        title: "One Shared Slug",
+        content: {
+          html: "<p>Hello again</p>",
+          text: "Hello again",
+        },
+      });
+
+    expect(firstPost.status).toBe(201);
+    expect(duplicatePost.status).toBe(409);
+    expect(duplicatePost.body.message).toBe("Post slug is already in use");
+  });
 });

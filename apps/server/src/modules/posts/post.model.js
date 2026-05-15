@@ -76,7 +76,8 @@ const postSchema = new Schema(
     timestamps: true,
   },
 );
-postSchema.index({ publicationId: 1, slug: 1 }, { unique: true });
+postSchema.index({ slug: 1 }, { unique: true });
+postSchema.index({ publicationId: 1, slug: 1 });
 postSchema.index({ status: 1, publishedAt: -1 });
 postSchema.index({ title: "text", subtitle: "text", "content.text": "text", tags: "text" });
 export const Post = mongoose.model("Post", postSchema);

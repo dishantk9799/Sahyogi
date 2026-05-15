@@ -43,6 +43,9 @@ export const postsRepository = {
   findBySlug(slug) {
     return withPostRelations(Post.findOne({ slug: slug.toLowerCase(), status: "published" }));
   },
+  findAnyBySlug(slug) {
+    return Post.findOne({ slug: slug.toLowerCase() }).select("_id");
+  },
   findById(id) {
     return withPostRelations(Post.findById(id));
   },

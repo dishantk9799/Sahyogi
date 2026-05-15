@@ -49,6 +49,11 @@ export const postsService = {
   async create(user, data) {
     await assertPublicationOwner(data.publicationId, user);
     const slug = data.slug?.toLowerCase() || createSlug(data.title);
+    const existingPost = await postsRepository.findAnyBySlug(slug);
+    if (existingPost) {
+      throw new ApiError(HttpStatus.CONFLICT, "Post slug is already in use");
+    }
+
     const post = await postsRepository.create({
       publicationId: new mongoose.Types.ObjectId(data.publicationId),
       authorId: new mongoose.Types.ObjectId(user.id),
@@ -78,6 +83,10 @@ export const postsService = {
     const update = { ...data };
     if (data.slug) {
       update.slug = data.slug.toLowerCase();
+      const existingPost = await postsRepository.findAnyBySlug(update.slug);
+      if (existingPost && existingPost._id.toString() !== post._id.toString()) {
+        throw new ApiError(HttpStatus.CONFLICT, "Post slug is already in use");
+      }
     }
     if (data.content) {
       update.content = sanitizePostContent(data.content);
