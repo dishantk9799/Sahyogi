@@ -6,6 +6,23 @@ import app from "../app.js";
 import { connectDatabase, disconnectDatabase } from "../configs/database.js";
 import { REFRESH_TOKEN_COOKIE } from "../constants/cookies.js";
 let mongo;
+let userCount = 0;
+
+async function createSessionCookies() {
+  userCount += 1;
+
+  const response = await request(app)
+    .post("/api/auth/signup")
+    .send({
+      fullName: "Tarun Raj",
+      username: `tarunraj${userCount}`,
+      email: `tarun${userCount}@example.com`,
+      password: "password123",
+    });
+
+  return response.headers["set-cookie"];
+}
+
 beforeAll(async () => {
   mongo = await MongoMemoryServer.create();
   await connectDatabase(mongo.getUri());
@@ -49,5 +66,46 @@ describe("auth", () => {
 
     expect(response.status).toBe(401);
     expect(response.body.message).toBe("Invalid refresh session");
+  });
+
+  it("rejects invalid post ids before hitting database casts", async () => {
+    const cookies = await createSessionCookies();
+    const response = await request(app)
+      .post("/api/posts/not-a-valid-id/publish")
+      .set("Cookie", cookies);
+
+    expect(response.status).toBe(422);
+    expect(response.body.details.fieldErrors.id[0]).toBe("id must be a valid MongoDB ObjectId");
+  });
+
+  it("rejects invalid publication ids before hitting database casts", async () => {
+    const cookies = await createSessionCookies();
+    const response = await request(app)
+      .patch("/api/publications/not-a-valid-id")
+      .set("Cookie", cookies)
+      .send({ tagline: "Updated tagline" });
+
+    expect(response.status).toBe(422);
+    expect(response.body.details.fieldErrors.id[0]).toBe("id must be a valid MongoDB ObjectId");
+  });
+
+  it("rejects invalid publication ids when creating posts", async () => {
+    const cookies = await createSessionCookies();
+    const response = await request(app)
+      .post("/api/posts")
+      .set("Cookie", cookies)
+      .send({
+        publicationId: "not-a-valid-id",
+        title: "A real editorial workflow",
+        content: {
+          html: "<p>Hello</p>",
+          text: "Hello",
+        },
+      });
+
+    expect(response.status).toBe(422);
+    expect(response.body.details.fieldErrors.publicationId[0]).toBe(
+      "publicationId must be a valid MongoDB ObjectId",
+    );
   });
 });

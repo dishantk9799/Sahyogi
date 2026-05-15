@@ -1,4 +1,5 @@
 import { z } from "zod";
+import { objectIdSchema } from "../../validators/object-id.validation.js";
 export const createPublicationSchema = z.object({
   name: z.string().trim().min(2).max(80),
   slug: z
@@ -23,7 +24,7 @@ export const publicationSlugParamsSchema = z.object({
   slug: z.string().trim().min(3).max(80),
 });
 export const publicationIdParamsSchema = z.object({
-  id: z.string().trim().min(12),
+  id: objectIdSchema("id"),
 });
 export const subscribeSchema = z.object({
   email: z.string().trim().email().toLowerCase(),

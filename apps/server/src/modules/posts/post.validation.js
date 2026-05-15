@@ -1,4 +1,5 @@
 import { z } from "zod";
+import { objectIdSchema } from "../../validators/object-id.validation.js";
 const contentSchema = z.object({
   html: z.string().default(""),
   text: z.string().default(""),
@@ -9,7 +10,7 @@ const seoSchema = z.object({
   description: z.string().trim().max(160).optional().default(""),
 });
 export const createPostSchema = z.object({
-  publicationId: z.string().trim().min(12),
+  publicationId: objectIdSchema("publicationId"),
   title: z.string().trim().min(3).max(140),
   slug: z.string().trim().min(3).max(160).optional(),
   subtitle: z.string().trim().max(240).optional().default(""),
@@ -22,7 +23,7 @@ export const createPostSchema = z.object({
 });
 export const updatePostSchema = createPostSchema.partial().omit({ publicationId: true });
 export const postIdParamsSchema = z.object({
-  id: z.string().trim().min(12),
+  id: objectIdSchema("id"),
 });
 export const postSlugParamsSchema = z.object({
   slug: z.string().trim().min(3).max(160),
