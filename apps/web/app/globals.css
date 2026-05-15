@@ -1,0 +1,122 @@
+@import "tailwindcss";
+
+@custom-variant dark (&:is(.dark *));
+
+@theme inline {
+  --font-sans: "Inter", "Geist", ui-sans-serif, system-ui, sans-serif;
+  --font-serif: "Iowan Old Style", "Palatino Linotype", "Book Antiqua", Georgia, serif;
+  --font-mono: "SFMono-Regular", "Cascadia Code", Consolas, monospace;
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-card: var(--card);
+  --color-card-foreground: var(--card-foreground);
+  --color-popover: var(--popover);
+  --color-popover-foreground: var(--popover-foreground);
+  --color-primary: var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-secondary: var(--secondary);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-accent: var(--accent);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-destructive: var(--destructive);
+  --color-border: var(--border);
+  --color-input: var(--input);
+  --color-ring: var(--ring);
+  --radius-sm: calc(var(--radius) - 4px);
+  --radius-md: calc(var(--radius) - 2px);
+  --radius-lg: var(--radius);
+}
+
+:root {
+  --radius: 0.5rem;
+  --background: oklch(0.985 0.004 84.57);
+  --foreground: oklch(0.145 0.015 250);
+  --card: oklch(1 0 0);
+  --card-foreground: oklch(0.145 0.015 250);
+  --popover: oklch(1 0 0);
+  --popover-foreground: oklch(0.145 0.015 250);
+  --primary: oklch(0.235 0.028 255);
+  --primary-foreground: oklch(0.985 0 0);
+  --secondary: oklch(0.94 0.012 85);
+  --secondary-foreground: oklch(0.18 0.018 255);
+  --muted: oklch(0.94 0.012 85);
+  --muted-foreground: oklch(0.48 0.018 250);
+  --accent: oklch(0.92 0.04 172);
+  --accent-foreground: oklch(0.18 0.018 255);
+  --destructive: oklch(0.58 0.21 28);
+  --border: oklch(0.86 0.012 85);
+  --input: oklch(0.86 0.012 85);
+  --ring: oklch(0.55 0.115 173);
+}
+
+.dark {
+  --background: oklch(0.15 0.016 250);
+  --foreground: oklch(0.96 0.006 85);
+  --card: oklch(0.19 0.018 250);
+  --card-foreground: oklch(0.96 0.006 85);
+  --popover: oklch(0.18 0.018 250);
+  --popover-foreground: oklch(0.96 0.006 85);
+  --primary: oklch(0.86 0.012 85);
+  --primary-foreground: oklch(0.17 0.018 250);
+  --secondary: oklch(0.24 0.018 250);
+  --secondary-foreground: oklch(0.92 0.006 85);
+  --muted: oklch(0.24 0.018 250);
+  --muted-foreground: oklch(0.68 0.014 85);
+  --accent: oklch(0.32 0.06 174);
+  --accent-foreground: oklch(0.94 0.006 85);
+  --destructive: oklch(0.64 0.22 28);
+  --border: oklch(0.29 0.018 250);
+  --input: oklch(0.29 0.018 250);
+  --ring: oklch(0.66 0.12 174);
+}
+
+* {
+  border-color: var(--border);
+}
+
+body {
+  background: var(--background);
+  color: var(--foreground);
+  font-family: var(--font-sans);
+  letter-spacing: 0;
+}
+
+::selection {
+  background: color-mix(in oklab, var(--accent) 72%, transparent);
+}
+
+.editorial-measure {
+  max-width: 72ch;
+}
+
+.cover-art {
+  background:
+    linear-gradient(135deg, color-mix(in oklab, var(--accent) 52%, transparent), transparent 48%),
+    radial-gradient(circle at 15% 20%, oklch(0.76 0.11 174 / 0.55), transparent 28%),
+    linear-gradient(120deg, oklch(0.24 0.03 250), oklch(0.68 0.09 84));
+}
+
+.prose-sahyogi {
+  color: var(--foreground);
+  font-family: var(--font-serif);
+  font-size: 1.125rem;
+  line-height: 1.8;
+}
+
+.prose-sahyogi h2 {
+  font-family: var(--font-sans);
+  font-size: 1.5rem;
+  font-weight: 650;
+  line-height: 1.25;
+  margin-top: 2rem;
+}
+
+.prose-sahyogi blockquote {
+  border-left: 3px solid var(--primary);
+  color: var(--muted-foreground);
+  font-family: var(--font-sans);
+  margin: 1.5rem 0;
+  padding-left: 1rem;
+}

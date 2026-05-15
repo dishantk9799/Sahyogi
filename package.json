@@ -1,0 +1,45 @@
+{
+  "name": "sahyogi",
+  "version": "0.1.0",
+  "private": true,
+  "description": "A production-grade publishing platform for independent writers and publications.",
+  "packageManager": "npm@10.9.3",
+  "engines": {
+    "node": ">=22.0.0",
+    "npm": ">=10.0.0"
+  },
+  "workspaces": [
+    "apps/web",
+    "apps/server"
+  ],
+  "scripts": {
+    "dev": "concurrently -k -n web,server -c cyan,magenta \"npm run dev -w @sahyogi/web\" \"npm run dev -w @sahyogi/server\"",
+    "dev:web": "npm run dev -w @sahyogi/web",
+    "dev:server": "npm run dev -w @sahyogi/server",
+    "build": "npm run build --workspaces --if-present",
+    "lint": "npm run lint --workspaces --if-present",
+    "typecheck": "npm run typecheck --workspaces --if-present",
+    "test": "npm run test --workspaces --if-present",
+    "test:run": "npm run test:run --workspaces --if-present",
+    "format": "prettier . --check",
+    "format:write": "prettier . --write",
+    "check": "npm run lint && npm run typecheck && npm run test:run && npm run build",
+    "prepare": "husky"
+  },
+  "lint-staged": {
+    "*.{js,jsx,ts,tsx,json,css,md}": [
+      "prettier --write"
+    ],
+    "apps/**/*.{ts,tsx,js,jsx}": [
+      "eslint --fix"
+    ]
+  },
+  "devDependencies": {
+    "@commitlint/cli": "^19.8.1",
+    "@commitlint/config-conventional": "^19.8.1",
+    "concurrently": "^9.2.1",
+    "husky": "^9.1.7",
+    "lint-staged": "^16.1.6",
+    "prettier": "^3.6.2"
+  }
+}
