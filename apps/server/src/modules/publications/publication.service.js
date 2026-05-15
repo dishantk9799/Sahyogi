@@ -36,6 +36,9 @@ export const publicationsService = {
       slug,
       description: data.description,
       tagline: data.tagline,
+      logoUrl: data.logoUrl,
+      coverUrl: data.coverUrl,
+      accentColor: data.accentColor,
     });
     return toPublicationDTO(publication);
   },

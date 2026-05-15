@@ -22,6 +22,9 @@ async function createSessionCookies() {
       password: "password123",
     });
 
+  expect(response.status).toBe(201);
+  expect(response.headers["set-cookie"]).toBeDefined();
+
   return response.headers["set-cookie"];
 }
 
@@ -93,6 +96,30 @@ describe("auth", () => {
     expect(response.status).toBe(200);
     expect(response.body.data.username).toBe("publicwriter");
     expect(response.body.data.email).toBeUndefined();
+  });
+
+  it("updates writer profile settings", async () => {
+    const cookies = await createSessionCookies();
+    const response = await request(app)
+      .patch("/api/users/me/profile")
+      .set("Cookie", cookies)
+      .send({
+        fullName: "Tarun Updated",
+        bio: "Writing about product engineering.",
+        avatarUrl: "https://example.com/avatar.png",
+        socials: {
+          website: "https://example.com",
+          github: "",
+          linkedin: "",
+          twitter: "",
+        },
+      });
+
+    expect(response.status).toBe(200);
+    expect(response.body.data.fullName).toBe("Tarun Updated");
+    expect(response.body.data.bio).toBe("Writing about product engineering.");
+    expect(response.body.data.avatarUrl).toBe("https://example.com/avatar.png");
+    expect(response.body.data.socials.website).toBe("https://example.com");
   });
 
   it("rejects invalid post ids before hitting database casts", async () => {
@@ -254,6 +281,8 @@ describe("auth", () => {
       slug: "partial-publication",
       description: "Keep this description",
       tagline: "Original tagline",
+      logoUrl: "https://example.com/logo.png",
+      accentColor: "#2563eb",
     });
 
     const response = await request(app)
@@ -261,6 +290,8 @@ describe("auth", () => {
       .set("Cookie", cookies)
       .send({ tagline: "Updated tagline" });
 
+    expect(publication.body.data.logoUrl).toBe("https://example.com/logo.png");
+    expect(publication.body.data.accentColor).toBe("#2563eb");
     expect(response.status).toBe(200);
     expect(response.body.data.description).toBe("Keep this description");
     expect(response.body.data.tagline).toBe("Updated tagline");

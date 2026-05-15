@@ -8,12 +8,20 @@ const publicationSlugSchema = z
   .min(3)
   .max(80)
   .regex(/^[a-zA-Z0-9-]+$/);
+const optionalUrlSchema = z.string().url().optional().or(z.literal(""));
+const accentColorSchema = z
+  .string()
+  .regex(/^#[0-9a-fA-F]{6}$/)
+  .optional();
 
 export const createPublicationSchema = z.object({
   name: z.string().trim().min(2).max(80),
   slug: publicationSlugSchema.optional(),
   description: z.string().trim().max(800).optional().default(""),
   tagline: z.string().trim().max(140).optional().default(""),
+  logoUrl: optionalUrlSchema,
+  coverUrl: optionalUrlSchema,
+  accentColor: accentColorSchema,
 });
 export const updatePublicationSchema = requirePatchFields(
   z.object({
@@ -21,12 +29,9 @@ export const updatePublicationSchema = requirePatchFields(
     slug: publicationSlugSchema.optional(),
     description: z.string().trim().max(800).optional(),
     tagline: z.string().trim().max(140).optional(),
-    logoUrl: z.string().url().optional().or(z.literal("")),
-    coverUrl: z.string().url().optional().or(z.literal("")),
-    accentColor: z
-      .string()
-      .regex(/^#[0-9a-fA-F]{6}$/)
-      .optional(),
+    logoUrl: optionalUrlSchema,
+    coverUrl: optionalUrlSchema,
+    accentColor: accentColorSchema,
   }),
 );
 export const publicationSlugParamsSchema = z.object({
