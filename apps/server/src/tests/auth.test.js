@@ -1,10 +1,12 @@
 import mongoose from "mongoose";
+import jwt from "jsonwebtoken";
 import { MongoMemoryServer } from "mongodb-memory-server";
 import request from "supertest";
 import { afterAll, afterEach, beforeAll, describe, expect, it } from "vitest";
 import app from "../app.js";
 import { connectDatabase, disconnectDatabase } from "../configs/database.js";
-import { REFRESH_TOKEN_COOKIE } from "../constants/cookies.js";
+import { env } from "../configs/env.js";
+import { ACCESS_TOKEN_COOKIE, REFRESH_TOKEN_COOKIE } from "../constants/cookies.js";
 let mongo;
 let userCount = 0;
 
@@ -66,6 +68,16 @@ describe("auth", () => {
 
     expect(response.status).toBe(401);
     expect(response.body.message).toBe("Invalid refresh session");
+  });
+
+  it("rejects signed access tokens with invalid payloads", async () => {
+    const invalidAccessToken = jwt.sign({ sid: "session-only" }, env.JWT_ACCESS_SECRET);
+    const response = await request(app)
+      .get("/api/auth/me")
+      .set("Cookie", [`${ACCESS_TOKEN_COOKIE}=${invalidAccessToken}`]);
+
+    expect(response.status).toBe(401);
+    expect(response.body.message).toBe("Invalid or expired session");
   });
 
   it("rejects invalid post ids before hitting database casts", async () => {
