@@ -8,6 +8,25 @@ import { User } from "../users/user.model.js";
 import { usersRepository } from "../users/user.repository.js";
 import { toSafeUser } from "../users/user.serializer.js";
 import { authRepository } from "./auth.repository.js";
+
+function readRefreshPayload(refreshToken) {
+  if (!refreshToken) {
+    throw new ApiError(HttpStatus.UNAUTHORIZED, "Refresh session is required");
+  }
+
+  try {
+    const payload = verifyRefreshToken(refreshToken);
+
+    if (!payload || typeof payload.sid !== "string" || typeof payload.tid !== "string") {
+      throw new Error("Invalid refresh token payload");
+    }
+
+    return payload;
+  } catch {
+    throw new ApiError(HttpStatus.UNAUTHORIZED, "Invalid refresh session");
+  }
+}
+
 function parseDurationToDate(value) {
   const dayMs = 24 * 60 * 60 * 1000;
   const match = /^(\d+)([smhd])$/.exec(value);
@@ -73,7 +92,7 @@ export const authService = {
     return { user: safeUser, tokens };
   },
   async refresh(refreshToken) {
-    const payload = verifyRefreshToken(refreshToken);
+    const payload = readRefreshPayload(refreshToken);
     const session = await authRepository.findSessionById(payload.sid);
     if (
       !session ||

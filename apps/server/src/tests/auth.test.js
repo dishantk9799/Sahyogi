@@ -4,6 +4,7 @@ import request from "supertest";
 import { afterAll, afterEach, beforeAll, describe, expect, it } from "vitest";
 import app from "../app.js";
 import { connectDatabase, disconnectDatabase } from "../configs/database.js";
+import { REFRESH_TOKEN_COOKIE } from "../constants/cookies.js";
 let mongo;
 beforeAll(async () => {
   mongo = await MongoMemoryServer.create();
@@ -33,5 +34,20 @@ describe("auth", () => {
   it("blocks protected routes without a session", async () => {
     const response = await request(app).get("/api/auth/me");
     expect(response.status).toBe(401);
+  });
+
+  it("rejects refresh without a cookie", async () => {
+    const response = await request(app).post("/api/auth/refresh");
+    expect(response.status).toBe(401);
+    expect(response.body.message).toBe("Refresh session is required");
+  });
+
+  it("rejects refresh with an invalid token cookie", async () => {
+    const response = await request(app)
+      .post("/api/auth/refresh")
+      .set("Cookie", [`${REFRESH_TOKEN_COOKIE}=not-a-real-token`]);
+
+    expect(response.status).toBe(401);
+    expect(response.body.message).toBe("Invalid refresh session");
   });
 });
