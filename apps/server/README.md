@@ -44,5 +44,11 @@ MONGO_URI
 JWT_ACCESS_SECRET
 JWT_REFRESH_SECRET
 CLIENT_URL
+API_PUBLIC_URL
+ENABLE_SWAGGER
+TRUST_PROXY
 NODE_ENV
 ```
+
+Keep `ENABLE_SWAGGER=false` in production unless the docs route should be
+public. Set `TRUST_PROXY=true` only behind a trusted platform proxy.

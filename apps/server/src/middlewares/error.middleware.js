@@ -13,9 +13,14 @@ export const errorMiddleware = (err, req, res, _next) => {
   }
   const statusCode =
     err instanceof ApiError ? err.statusCode : err.statusCode || HttpStatus.INTERNAL_SERVER_ERROR;
+  const message =
+    err instanceof ApiError || !isProduction
+      ? err.message || "Internal Server Error"
+      : "Internal Server Error";
+
   return res.status(statusCode).json({
     success: false,
-    message: err.message || "Internal Server Error",
+    message,
     details: err instanceof ApiError ? err.details : undefined,
     requestId: req.requestId,
     stack: isProduction ? undefined : err.stack,

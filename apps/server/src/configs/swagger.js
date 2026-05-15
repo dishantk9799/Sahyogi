@@ -10,10 +10,10 @@ export const swaggerSpec = swaggerJsdoc({
     },
     servers: [
       {
-        url: `http://localhost:${env.PORT}`,
-        description: "Local API",
+        url: env.API_PUBLIC_URL || `http://localhost:${env.PORT}`,
+        description: env.API_PUBLIC_URL ? "Configured API" : "Local API",
       },
     ],
   },
-  apis: ["src/modules/**/*.routes.ts", "src/routes/**/*.ts"],
+  apis: ["src/modules/**/*.routes.js", "src/routes/**/*.js"],
 });

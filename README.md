@@ -35,3 +35,29 @@ Never commit real environment secrets.
 `NEXT_PUBLIC_API_URL` points at the Express API root, for example
 `http://localhost:5000/api`. It powers server-side content fetches and the
 Next.js `/api` rewrite used by browser requests.
+
+## Deployment Notes
+
+Use real values only in platform environment settings, never in committed files.
+
+Server:
+
+- Set `NODE_ENV=production`.
+- Set `CLIENT_URL` to the deployed web origin.
+- Set `API_PUBLIC_URL` to the deployed API origin.
+- Keep `ENABLE_SWAGGER=false` unless API docs should be publicly reachable.
+- Set `TRUST_PROXY=true` behind a trusted reverse proxy.
+- Provide production `MONGO_URI`, `JWT_ACCESS_SECRET`, and `JWT_REFRESH_SECRET`.
+
+Web:
+
+- Set `NEXT_PUBLIC_APP_URL` to the deployed web origin.
+- Set `NEXT_PUBLIC_API_URL` to the deployed API root ending in `/api`.
+
+Before release, run:
+
+```bash
+npm run lint
+npm run test:run
+npm run build
+```

@@ -17,6 +17,9 @@ import { apiRoutes } from "./routes/index.js";
 export function createApp() {
   const app = express();
   app.disable("x-powered-by");
+  if (env.TRUST_PROXY) {
+    app.set("trust proxy", 1);
+  }
   app.use(requestIdMiddleware);
   app.use(helmet());
   app.use(
@@ -34,7 +37,9 @@ export function createApp() {
     app.use(morgan(isProduction ? "combined" : "dev"));
   }
   app.use("/api", apiRateLimiter, apiRoutes);
-  app.use("/api/docs", swaggerUi.serve, swaggerUi.setup(swaggerSpec));
+  if (env.ENABLE_SWAGGER) {
+    app.use("/api/docs", swaggerUi.serve, swaggerUi.setup(swaggerSpec));
+  }
   app.use(notFoundMiddleware);
   app.use(errorMiddleware);
   return app;

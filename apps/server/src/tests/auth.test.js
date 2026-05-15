@@ -40,6 +40,14 @@ afterAll(async () => {
   await mongo.stop();
 });
 describe("auth", () => {
+  it("reports API health", async () => {
+    const response = await request(app).get("/api/health");
+
+    expect(response.status).toBe(200);
+    expect(response.body.data.status).toBe("ok");
+    expect(response.body.data.service).toBe("sahyogi-api");
+  });
+
   it("creates a safe session without returning password material", async () => {
     const response = await request(app).post("/api/auth/signup").send({
       fullName: "Tarun Raj",

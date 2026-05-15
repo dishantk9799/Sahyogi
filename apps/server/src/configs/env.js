@@ -1,10 +1,22 @@
 import dotenv from "dotenv";
 import { z } from "zod";
 dotenv.config({ quiet: true });
+
+const booleanEnv = z.preprocess((value) => {
+  if (typeof value === "string") {
+    return ["true", "1", "yes", "on"].includes(value.toLowerCase());
+  }
+
+  return value;
+}, z.boolean());
+
 const envSchema = z.object({
   NODE_ENV: z.enum(["development", "test", "production"]).default("development"),
   PORT: z.coerce.number().int().positive().default(5000),
   CLIENT_URL: z.string().url().default("http://localhost:3000"),
+  API_PUBLIC_URL: z.string().url().optional().or(z.literal("")).default(""),
+  ENABLE_SWAGGER: booleanEnv.default(false),
+  TRUST_PROXY: booleanEnv.default(false),
   MONGO_URI: z.string().min(1, "MONGO_URI is required"),
   JWT_ACCESS_SECRET: z.string().min(24, "JWT_ACCESS_SECRET must be at least 24 characters"),
   JWT_REFRESH_SECRET: z.string().min(24, "JWT_REFRESH_SECRET must be at least 24 characters"),
