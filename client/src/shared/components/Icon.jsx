@@ -1,0 +1,70 @@
+import {
+    ArrowRight,
+    AtSign,
+    Bookmark,
+    BookOpen,
+    Code2,
+    ExternalLink,
+    FileText,
+    Filter,
+    FolderOpen,
+    GitBranch,
+    Globe,
+    Heart,
+    Home,
+    LayoutDashboard,
+    Loader2,
+    Lock,
+    LogOut,
+    Mail,
+    Menu,
+    Plus,
+    Rocket,
+    Search,
+    Settings,
+    SquarePen,
+    User,
+    Users,
+    X,
+    EyeOff,
+    Eye,
+} from "lucide-react";
+
+const icons = {
+    home: Home,
+    search: Search,
+    folder: FolderOpen,
+    file: FileText,
+    dashboard: LayoutDashboard,
+    logout: LogOut,
+    user: User,
+    settings: Settings,
+    bookmark: Bookmark,
+    menu: Menu,
+    plus: Plus,
+    heart: Heart,
+    code: Code2,
+    rocket: Rocket,
+    book: BookOpen,
+    users: Users,
+    arrowRight: ArrowRight,
+    mail: Mail,
+    lock: Lock,
+    at: AtSign,
+    github: GitBranch,
+    globe: Globe,
+    edit: SquarePen,
+    external: ExternalLink,
+    filter: Filter,
+    close: X,
+    loader: Loader2,
+    eyeOff:EyeOff,
+    eye:Eye
+};
+
+function Icon({ name, className = "h-4 w-4" }) {
+    const Component = icons[name] || Code2;
+    return <Component className={className} aria-hidden="true" />;
+}
+
+export default Icon;
