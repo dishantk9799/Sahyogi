@@ -10,7 +10,7 @@ import dashboardRoute from "./routes/dashboard.route.js";
 
 const app = express();
 app.use(cors({
-    origin: process.env.CLIENT_URL,
+    origin: process.env.CLIENT_URL.split(","),
     credentials: true
 }));
 app.use(express.json());
