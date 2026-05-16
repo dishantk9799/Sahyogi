@@ -28,10 +28,10 @@ export const login = asyncHandler(async (req, res) => {
     const { user, token } = await loginUser(email, password);
 
     const options = {
-        maxAge: 7 * 24 * 60 * 60 * 1000,
-        httpOnly: true,
-        sameSite: process.env.NODE_ENV === "development" ? "lax" : "strict",
-        secure: process.env.NODE_ENV !== "development",
+    maxAge: 7 * 24 * 60 * 60 * 1000,
+    httpOnly: true,
+    secure: process.env.NODE_ENV === "production",
+    sameSite: process.env.NODE_ENV === "production" ? "none" : "lax"
     };
 
     return res
